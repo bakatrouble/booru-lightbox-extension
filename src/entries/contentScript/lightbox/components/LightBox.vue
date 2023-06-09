@@ -77,8 +77,8 @@ const currentMedia = computed(() => {
 });
 const isHorizontalSlide = computed(() => Math.abs(data.draggingOffset.x * 2) > Math.abs(data.draggingOffset.y));
 const closeGesture = computed(() => data.draggingOffset.y > calc('100vh / 3'));
-const prevGesture = computed(() => data.draggingOffset.x > -calc('100vw / 3'));
-const nextGesture = computed(() => data.draggingOffset.x < calc('100vw / 3'));
+const prevGesture = computed(() => data.draggingOffset.x > calc('100vw / 3'));
+const nextGesture = computed(() => data.draggingOffset.x < -calc('100vw / 3'));
 const gesture = computed(() => closeGesture.value || prevGesture.value || nextGesture.value);
 
 watch(() => props.imageList, (val) => {
@@ -187,7 +187,6 @@ const onKeyPress = async (e: KeyboardEvent) => {
     if (['Escape', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
-        e.cancelBubble = true;
     }
 
     if (e.key === 'Escape') {
