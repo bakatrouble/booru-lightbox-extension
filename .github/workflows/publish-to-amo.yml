@@ -1,0 +1,26 @@
+name: Builds, signs and publishes the WebExtension
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-to-amo:
+    name: Build and publish the extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and checkout source
+        uses: actions/checkout@master
+      - uses: pnpm/action-setup@v2.2.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+      - name: Sign the web-ext
+        uses: saphareas/sign-web-extension-action@master
+        with:
+          web-ext-id: "{your extension uuid}"
+          sign-listed: false
+          amo-api-key: ${{ secrets.AMO_API_KEY }}
+          amo-api-secret: ${{ secrets.AMO_API_SECRET }}
