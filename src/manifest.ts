@@ -32,11 +32,6 @@ const sharedManifest = {
         'storage',
         'menus',
     ],
-    browser_specific_settings: {
-        gecko: {
-            id: "booru@bakatrouble.me",
-        },
-    },
 };
 
 const ManifestV2 = {
