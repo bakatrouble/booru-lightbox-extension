@@ -1,6 +1,6 @@
 {
   "name": "image-galleries",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "displayName": "Image Galleries",
   "author": "bakatrouble",
   "description": "Image galleries on some websites",
@@ -34,6 +34,7 @@
     "eslint": "^8.42.0",
     "eslint-config-alloy": "^5.0.0",
     "eslint-plugin-vue": "^9.14.1",
+    "husky": "^8.0.3",
     "sass": "^1.62.1",
     "typescript": "^5.0.4",
     "vite": "~4.3.1",
