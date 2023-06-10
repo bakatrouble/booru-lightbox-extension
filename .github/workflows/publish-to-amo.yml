@@ -19,12 +19,13 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build the extension
-        run: pnpm run build
-      - name: Sign the web-ext
-        uses: saphareas/sign-web-extension-action@master
+      - name: Build and sign the extension
+        run: pnpm run sign
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      - name: Upload the signed extension as an artifact
+        uses: actions/upload-artifact@v3
         with:
-          web-ext-id: booru@bakatrouble.me
-          sign-listed: false
-          amo-api-key: ${{ secrets.AMO_API_KEY }}
-          amo-api-secret: ${{ secrets.AMO_API_SECRET }}
+          name: signed-extension
+          path: web-ext-artifacts
