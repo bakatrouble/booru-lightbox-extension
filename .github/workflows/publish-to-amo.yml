@@ -24,7 +24,7 @@ jobs:
       - name: Sign the web-ext
         uses: saphareas/sign-web-extension-action@master
         with:
-          web-ext-id: "b5cd0a25fb3e4d7cb9a3"
+          web-ext-id: booru@bakatrouble.me
           sign-listed: false
           amo-api-key: ${{ secrets.AMO_API_KEY }}
           amo-api-secret: ${{ secrets.AMO_API_SECRET }}
