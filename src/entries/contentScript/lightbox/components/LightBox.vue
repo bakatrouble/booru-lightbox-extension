@@ -228,9 +228,10 @@ const locate = () => {
 };
 
 const upload = async (uploadLink: UploadLink) => {
-    const el = $el.value!.querySelector(`.slide-${props.currentIdx} .slide-content`)!.querySelector('img') as HTMLImageElement;
-    const dataUrl = getImageBase64(el);
-    const r = await fetch(uploadLink.url, {
+    console.log(`.slide-${props.currentIdx} .content`);
+    const el = $el.value!.querySelector(`.slide-${props.currentIdx} .content`)!.querySelector('img') as HTMLImageElement;
+    const dataUrl = await getImageBase64(el);
+    const fetchParams = {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -242,7 +243,8 @@ const upload = async (uploadLink: UploadLink) => {
             "jsonrpc": "2.0",
             "id": 0,
         }),
-    });
+    };
+    const r = await fetch(uploadLink.url, fetchParams);
     const response = await r.json();
     if (response.result === true) {
         window.galleryExtension?.pushNotification({
@@ -257,6 +259,7 @@ const upload = async (uploadLink: UploadLink) => {
             message: 'This image was sent before',
         });
     } else {
+        console.error(uploadLink.url, fetchParams, response);
         window.galleryExtension?.pushNotification({
             level: NotificationLevel.Error,
             title: 'Error',

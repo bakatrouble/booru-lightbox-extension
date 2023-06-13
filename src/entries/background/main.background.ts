@@ -54,8 +54,7 @@ enum MenuIds {
                     const url = uploadLinks.find((uploadLink: UploadLink) => uploadLink.id === menuItemId.replace(MenuIds.Destination, ''))?.url;
 
                     const code = `
-                        const evalFunction = (${getImageBase64.toString()});
-                        evalFunction(browser.menus.getTargetElement(${info.targetElementId}));
+                        (${getImageBase64.toString()})(browser.menus.getTargetElement(${info.targetElementId}));
                     `;
                     const dataUrl = (await browser.tabs.executeScript(tab!.id, {
                         code,
