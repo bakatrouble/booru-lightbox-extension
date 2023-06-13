@@ -6,6 +6,7 @@ import Primary from "./App.vue";
 import 'vuetify/lib/styles/main.sass';
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 import PortalVue from 'portal-vue';
+import Timeout from 'await-timeout';
 
 export let app: App;
 
@@ -25,7 +26,10 @@ if (collectImagesModule) {
     renderContent(
         'lightbox',
         import.meta.PLUGIN_WEB_EXT_CHUNK_CSS_PATHS,
-        (appRoot: HTMLElement) => {
+        async (appRoot: HTMLElement) => {
+            while (!document.querySelector('.vite-webext-app-notifications.loaded')) {
+                await Timeout.set(10);
+            }
             const elementToBackup = document.querySelector('#vuetify-theme-stylesheet');
             if (elementToBackup) {
                 elementToBackup.id = 'vuetify-theme-stylesheet-backup';
@@ -34,13 +38,15 @@ if (collectImagesModule) {
                 .use(vuetify)
                 .use(PortalVue);
             app.mount(appRoot);
-            const themeStylesheet = document.querySelector('#vuetify-theme-stylesheet[nonce=lightbox]') as HTMLLinkElement;
+            await Timeout.set(10);
+            const themeStylesheet = document.querySelector('#vuetify-theme-stylesheet') as HTMLLinkElement;
             themeStylesheet.id = 'vuetify-theme-stylesheet-lightbox';
             appRoot.appendChild(themeStylesheet.cloneNode(true));
             themeStylesheet.remove();
             if (elementToBackup) {
                 elementToBackup.id = 'vuetify-theme-stylesheet';
             }
+            document.querySelector('.vite-webext-app-lightbox')!.classList.add('loaded');
         },
     );
 }

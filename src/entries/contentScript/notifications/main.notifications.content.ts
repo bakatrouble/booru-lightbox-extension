@@ -5,6 +5,7 @@ import Notifications from './Notifications.vue';
 import renderContent from '~/entries/contentScript/renderContent';
 import 'vuetify/lib/styles/main.sass';
 import { createHead } from '@vueuse/head';
+import Timeout from 'await-timeout';
 
 const vuetify = createVuetify({
     icons: {
@@ -20,7 +21,7 @@ const vuetify = createVuetify({
 renderContent(
     'notifications',
     import.meta.PLUGIN_WEB_EXT_CHUNK_CSS_PATHS,
-    (appRoot: HTMLElement) => {
+    async (appRoot: HTMLElement) => {
         const elementToBackup = document.querySelector('#vuetify-theme-stylesheet');
         if (elementToBackup) {
             elementToBackup.id = 'vuetify-theme-stylesheet-backup';
@@ -28,13 +29,16 @@ renderContent(
         createApp(Notifications)
             .use(vuetify)
             .mount(appRoot);
-        const themeStylesheet = document.querySelector('#vuetify-theme-stylesheet[nonce=notifications]') as HTMLLinkElement;
+        let themeStylesheet: HTMLLinkElement;
+        while (!(themeStylesheet = document.querySelector('#vuetify-theme-stylesheet')!))
+            await Timeout.set(10);
         themeStylesheet.id = 'vuetify-theme-stylesheet-notifications';
         appRoot.appendChild(themeStylesheet.cloneNode(true));
         themeStylesheet.remove();
         if (elementToBackup) {
             elementToBackup.id = 'vuetify-theme-stylesheet';
         }
+        document.querySelector('.vite-webext-app-notifications')!.classList.add('loaded');
     },
 ).then(() => {
 })
