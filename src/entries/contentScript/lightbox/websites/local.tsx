@@ -1,0 +1,15 @@
+import { CollectImagesOptions, MediaListItem, MediaType } from '~/entries/contentScript/types';
+
+const localCollectImages: CollectImagesOptions = {
+    callback: async (): Promise<MediaListItem[]> =>
+        Array.from(document.querySelectorAll('[data-mime^=image\\/]')).map(el => ({
+            el: el as HTMLElement,
+            item: {
+                src: (el as HTMLAnchorElement).href,
+                // label: <a href={(el as HTMLAnchorElement).href}>Show image</a>,
+                type: MediaType.Image,
+            },
+        })),
+    domains: ['127.0.0.1:8474', 'localhost:8474'],
+};
+export default localCollectImages;

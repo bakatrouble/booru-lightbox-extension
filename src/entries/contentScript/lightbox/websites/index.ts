@@ -4,6 +4,7 @@ import furaffinityCollectImages from './furaffinity';
 import gelbooruCollectImages from './gelbooru';
 import inkbunnyCollectImages from './inkbunny';
 import rule34CollectImages from './rule34';
+import localCollectImages from './local';
 
 export const collectImagesModules = [
     e621CollectImages,
@@ -11,6 +12,7 @@ export const collectImagesModules = [
     gelbooruCollectImages,
     inkbunnyCollectImages,
     rule34CollectImages,
+    localCollectImages,
 ];
 
 export const getCollectImagesModule = (location: Location) =>
@@ -20,7 +22,7 @@ export const getCollectImagesModule = (location: Location) =>
             domains = [domains];
         }
         for (const domain of domains) {
-            if ((domain as RegExp).test?.(location.hostname) || location.hostname.includes(domain as string))
+            if ((domain as RegExp).test?.(location.host) || location.host.includes(domain as string))
                 return true;
         }
     });
