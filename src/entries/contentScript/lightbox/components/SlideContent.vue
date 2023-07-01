@@ -16,6 +16,8 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(['pinchStarted']);
+
 const data = reactive({
     loaded: false,
     mediaSize: { x: 0, y: 0 } satisfies Vector2,
@@ -76,51 +78,32 @@ const onWheel = (e: WheelEvent) => {
     data.currentRatio = newRatio;
 };
 
-const onMouseDown = (e: MouseEvent) => {
-    if (data.currentRatio === data.initialRatio || e.button !== 0)
+const onGestureGrab = (clientX: number, clientY: number, secondTouchStarted: boolean) => {
+    if (data.currentRatio === data.initialRatio && !secondTouchStarted)
         return;
-    e.preventDefault();
-    e.stopPropagation();
     data.dragging = true;
     data.draggingStart = {
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
     };
     data.draggingStartPosition = data.position;
+    return true;
 }
 
-const onTouchStart = (e: TouchEvent) => {
-    if (data.currentRatio === data.initialRatio)
-        return;
-    e.preventDefault();
-    e.stopPropagation();
-    data.dragging = true;
-    data.draggingStart = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-    };
-    data.draggingStartPosition = data.position;
-}
-
-const onMouseMove = (e: MouseEvent) => {
+const onGestureDrag = (clientX: number, clientY: number) => {
     if (!data.dragging)
         return;
+
     data.position = {
-        x: data.draggingStartPosition.x + e.clientX - data.draggingStart.x,
-        y: data.draggingStartPosition.y + e.clientY - data.draggingStart.y,
+        x: data.draggingStartPosition.x + clientX - data.draggingStart.x,
+        y: data.draggingStartPosition.y + clientY - data.draggingStart.y,
     };
 }
 
-const onTouchMove = (e: TouchEvent) => {
+const onGestureRelease = () => {
     if (!data.dragging)
         return;
-    data.position = {
-        x: data.draggingStartPosition.x + e.touches[0].clientX - data.draggingStart.x,
-        y: data.draggingStartPosition.y + e.touches[0].clientY - data.draggingStart.y,
-    };
-}
 
-const processDragFinish = () => {
     if (data.position !== data.draggingStartPosition) {
         const scaledImageWidth = data.mediaSize.x * data.currentRatio;
         const scaledImageHeight = data.mediaSize.y * data.currentRatio;
@@ -153,24 +136,47 @@ const processDragFinish = () => {
             }
         }
     }
+
+    data.dragging = false;
+}
+
+const onMouseDown = (e: MouseEvent) => {
+    if (e.button !== 0)
+        return;
+
+    if (onGestureGrab(e.clientX, e.clientY, false)) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+}
+
+const onTouchStart = (e: TouchEvent) => {
+    const secondTouchStarted = e.touches[1] === e.changedTouches[0];
+    if (onGestureGrab(e.touches[0].clientX, e.touches[0].clientY, secondTouchStarted)) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    if (secondTouchStarted)
+        emit('pinchStarted');
+}
+
+const onMouseMove = (e: MouseEvent) => {
+    onGestureDrag(e.clientX, e.clientY);
+}
+
+const onTouchMove = (e: TouchEvent) => {
+    onGestureDrag(e.touches[0].clientX, e.touches[0].clientY);
 }
 
 const onMouseUp = (e: MouseEvent) => {
-    if (!data.dragging || e.button !== 0)
+    if (e.button !== 0)
         return;
 
-    processDragFinish();
-
-    data.dragging = false;
+    onGestureRelease();
 }
 
-const onTouchEnd = (e: TouchEvent) => {
-    if (!data.dragging)
-        return;
-
-    processDragFinish();
-
-    data.dragging = false;
+const onTouchEnd = () => {
+    onGestureRelease();
 }
 
 const onWindowResize = () => {
