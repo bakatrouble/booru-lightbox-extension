@@ -134,14 +134,33 @@ onUnmounted(() => {
     document.removeEventListener('keydown', onKeyPress);
 });
 
-const onMouseDown = (e: MouseEvent) => {
-    if (data.dragging || e.button !== 0)
+const onMouseDown = (e: MouseEvent | TouchEvent) => {
+    if (data.dragging || e instanceof MouseEvent && e.button !== 0)
         return;
     data.dragging = true;
     data.draggingOffset = { x: 0, y: 0 };
+    if (e instanceof MouseEvent)
+        data.draggingStart = {
+            x: e.clientX,
+            y: e.clientY,
+        };
+    else
+        data.draggingStart = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+        };
+    data.horizontalLocked = data.verticalLocked = false;
+}
+
+const onTouchStart = (e: TouchEvent) => {
+    if (data.dragging)
+        return;
+    console.log('touchstart', e);
+    data.dragging = true;
+    data.draggingOffset = { x: 0, y: 0 };
     data.draggingStart = {
-        x: e.clientX,
-        y: e.clientY,
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
     };
     data.horizontalLocked = data.verticalLocked = false;
 }
@@ -162,8 +181,43 @@ const onMouseMove = (e: MouseEvent) => {
     }
 }
 
+const onTouchMove = (e: TouchEvent) => {
+    if (!data.dragging)
+        return;
+    console.log('touchmove', e);
+    const draggingOffset = {
+        x: e.touches[0].clientX - data.draggingStart.x,
+        y: e.touches[0].clientY - data.draggingStart.y,
+    };
+    data.draggingOffset = draggingOffset;
+    if (!data.horizontalLocked && !data.verticalLocked) {
+        const horAbs = Math.abs(draggingOffset.x);
+        const verAbs = Math.abs(draggingOffset.y);
+        data.horizontalLocked = horAbs > 50 && horAbs > verAbs;
+        data.verticalLocked = verAbs > 50 && verAbs > horAbs;
+    }
+}
+
 const onMouseUp = (e: MouseEvent) => {
     if (!data.dragging || e.button !== 0)
+        return;
+    if (data.horizontalLocked) {
+        if (prevGesture.value && props.currentIdx > 0)
+            emit('slideDelta', -1);
+        else if (nextGesture.value && props.currentIdx < props.imageList!.length - 1)
+            emit('slideDelta', +1);
+    } else if (data.verticalLocked) {
+        if (closeGesture.value) {
+            close();
+        }
+    }
+    data.dragging = false;
+    data.verticalLocked = data.horizontalLocked = false;
+    data.draggingOffset = { x: 0, y: 0 };
+};
+
+const onTouchEnd = (e: TouchEvent) => {
+    if (!data.dragging)
         return;
     if (data.horizontalLocked) {
         if (prevGesture.value && props.currentIdx > 0)
@@ -289,6 +343,9 @@ const upload = async (uploadLink: UploadLink) => {
             @mousedown="onMouseDown"
             @mousemove="onMouseMove"
             @mouseup="onMouseUp"
+            @touchstart="onTouchStart"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
         >
             <div
                 v-for="(item, idx) in data.loadedImages"

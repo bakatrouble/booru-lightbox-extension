@@ -8,7 +8,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "watch": "vite build --watch --mode development --minify false",
     "dev": "vite",
-    "serve:firefox": "web-ext run --start-url \"about:debugging#/runtime/this-firefox\"  --source-dir ./dist/",
+    "serve:firefox": "web-ext run --start-url \"about:debugging#/runtime/this-firefox\"  --source-dir ./dist/ -f \"C:\\Program Files\\Firefox Developer Edition\\firefox.exe\"",
     "serve:chrome": "web-ext run -t chromium --start-url \"https://example.com\" --source-dir ./dist/",
     "sign": "pnpm build && dotenv cross-var web-ext sign",
     "lint": "eslint --cache . --fix"

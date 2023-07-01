@@ -89,19 +89,38 @@ const onMouseDown = (e: MouseEvent) => {
     data.draggingStartPosition = data.position;
 }
 
+const onTouchStart = (e: TouchEvent) => {
+    if (data.currentRatio === data.initialRatio)
+        return;
+    e.preventDefault();
+    e.stopPropagation();
+    data.dragging = true;
+    data.draggingStart = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+    };
+    data.draggingStartPosition = data.position;
+}
+
 const onMouseMove = (e: MouseEvent) => {
     if (!data.dragging)
         return;
     data.position = {
         x: data.draggingStartPosition.x + e.clientX - data.draggingStart.x,
         y: data.draggingStartPosition.y + e.clientY - data.draggingStart.y,
-    }
+    };
 }
 
-const onMouseUp = (e: MouseEvent) => {
-    if (!data.dragging || e.button !== 0)
+const onTouchMove = (e: TouchEvent) => {
+    if (!data.dragging)
         return;
+    data.position = {
+        x: data.draggingStartPosition.x + e.touches[0].clientX - data.draggingStart.x,
+        y: data.draggingStartPosition.y + e.touches[0].clientY - data.draggingStart.y,
+    };
+}
 
+const processDragFinish = () => {
     if (data.position !== data.draggingStartPosition) {
         const scaledImageWidth = data.mediaSize.x * data.currentRatio;
         const scaledImageHeight = data.mediaSize.y * data.currentRatio;
@@ -134,6 +153,22 @@ const onMouseUp = (e: MouseEvent) => {
             }
         }
     }
+}
+
+const onMouseUp = (e: MouseEvent) => {
+    if (!data.dragging || e.button !== 0)
+        return;
+
+    processDragFinish();
+
+    data.dragging = false;
+}
+
+const onTouchEnd = (e: TouchEvent) => {
+    if (!data.dragging)
+        return;
+
+    processDragFinish();
 
     data.dragging = false;
 }
@@ -188,6 +223,9 @@ const onVideoLoad = (width: number, height: number) => {
             @mousedown="onMouseDown"
             @mousemove="onMouseMove"
             @mouseup="onMouseUp"
+            @touchstart="onTouchStart"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
         >
             <img
                 v-if="media.item.type === MediaType.Image"
