@@ -228,7 +228,12 @@ const locate = () => {
 };
 
 const upload = async (uploadLink: UploadLink) => {
-    console.log(`.slide-${props.currentIdx} .content`);
+    const notificationId = window.galleryExtension?.pushNotification({
+        level: NotificationLevel.Loading,
+        title: 'Uploading',
+        message: 'Uploading picture...',
+    });
+
     const el = $el.value!.querySelector(`.slide-${props.currentIdx} .content`)!.querySelector('img') as HTMLImageElement;
     const dataUrl = await getImageBase64(el);
     const fetchParams = {
@@ -247,20 +252,23 @@ const upload = async (uploadLink: UploadLink) => {
     const r = await fetch(uploadLink.url, fetchParams);
     const response = await r.json();
     if (response.result === true) {
-        window.galleryExtension?.pushNotification({
+        window.galleryExtension?.updateNotification({
+            id: notificationId!,
             level: NotificationLevel.Success,
             title: 'Success',
             message: 'Picture was sent successfully',
         });
     } else if (response.result === 'duplicate') {
-        window.galleryExtension?.pushNotification({
+        window.galleryExtension?.updateNotification({
+            id: notificationId!,
             level: NotificationLevel.Error,
             title: 'Duplicate',
             message: 'This image was sent before',
         });
     } else {
         console.error(uploadLink.url, fetchParams, response);
-        window.galleryExtension?.pushNotification({
+        window.galleryExtension?.updateNotification({
+            id: notificationId!,
             level: NotificationLevel.Error,
             title: 'Error',
             message: 'An error has occurred while sending picture',

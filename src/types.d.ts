@@ -3,7 +3,8 @@ import { NotificationLevel, NotificationOptions } from './entries/contentScript/
 declare global {
     interface Window {
         galleryExtension?: {
-            pushNotification: (options: { level: NotificationLevel; title: string; message: string }) => void;
+            pushNotification: (options: { level: NotificationLevel; title: string; message: string }) => string;
+            updateNotification: (options: { id: string; level: NotificationLevel; title: string; message: string }) => void;
         }
     }
 

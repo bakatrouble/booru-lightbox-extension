@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { mdiAlertCircleOutline, mdiCheckBold } from '@mdi/js';
-import { computed, defineComponent, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { VIcon, VSnackbar } from 'vuetify/components';
+import {mdiAlertCircleOutline, mdiCheckBold} from '@mdi/js';
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {VIcon, VSnackbar} from 'vuetify/components';
 import browser from 'webextension-polyfill';
 import {
     NotificationEntry,
     NotificationLevel,
     NotificationOptions,
     RuntimeMessage,
+    UpdateNotificationOptions,
 } from '~/entries/contentScript/types'
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 
 const data = reactive({
     notifications: [] as NotificationEntry[],
@@ -32,18 +33,30 @@ const offsets = computed(() => {
 });
 
 const pushNotification = (options: NotificationOptions) => {
+    const id = uuidv4();
     data.notifications.push({
         ...options,
         visible: true,
-        id: uuidv4(),
+        id,
     });
+    return id;
 }
 
-const messageHandler = (message: RuntimeMessage) => {
+const updateNotification = (options: UpdateNotificationOptions) => {
+    const idx = data.notifications.findIndex(n => n.id === options.id);
+    if (idx !== -1) {
+        data.notifications[idx].level = options.level;
+        data.notifications[idx].message = options.message;
+        data.notifications[idx].title = options.title;
+    }
+}
+
+const messageHandler = async (message: RuntimeMessage) => {
     switch (message.type) {
     case 'notification':
-        pushNotification(message.options);
-        break;
+        return pushNotification(message.options);
+    case 'update-notification':
+        return updateNotification(message.options);
     }
 }
 
@@ -51,6 +64,7 @@ onMounted(() => {
     console.log('Notifications mounted');
     window.galleryExtension = {
         pushNotification,
+        updateNotification,
     };
     browser.runtime.onMessage.addListener(messageHandler);
 });
@@ -66,6 +80,17 @@ const getIcon = (notification: NotificationOptions) => {
         return mdiCheckBold;
     case NotificationLevel.Error:
         return mdiAlertCircleOutline;
+    }
+};
+
+const getColor = (notification: NotificationOptions) => {
+    switch (notification.level) {
+    case NotificationLevel.Success:
+        return 'green';
+    case NotificationLevel.Error:
+        return 'red';
+    case NotificationLevel.Loading:
+        return 'grey';
     }
 };
 
@@ -100,8 +125,8 @@ watch(
             <v-snackbar
                 ref="snackbar"
                 v-model="notification.visible"
-                :color="notification.level"
-                :timeout="5000"
+                :color="getColor(notification)"
+                :timeout="notification.level !== NotificationLevel.Loading ? 5000 : -1"
                 :class="`v-snackbar-${notification.id}`"
                 vertical="true"
                 attach="true"
@@ -111,7 +136,8 @@ watch(
             >
                 <div class="d-flex flex-row">
                     <div class="d-flex flex-row align-center">
-                        <v-icon color="white" :icon="getIcon(notification)" class="mr-4" style="font-size: 40px" />
+                        <v-icon v-if="notification.level !== NotificationLevel.Loading" color="white" :icon="getIcon(notification)" class="mr-4" style="font-size: 40px" />
+                        <v-progress-circular v-else :size="40" :width="4" class="mr-4" color="white" indeterminate />
                     </div>
                     <div>
                         <div v-if="notification.title" class="text-subtitle-1 pb-2">{{ notification.title }}</div>

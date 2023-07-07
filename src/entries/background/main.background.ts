@@ -50,7 +50,16 @@ enum MenuIds {
                 await browser.runtime.openOptionsPage();
                 return;
             } else if (menuItemId.startsWith(MenuIds.Destination)) {
+                const notificationId = await browser.tabs.sendMessage(tab!.id!, {
+                    type: 'notification',
+                    options: {
+                        level: NotificationLevel.Loading,
+                        title: 'Uploading',
+                        message: 'Uploading picture...',
+                    },
+                });
                 try {
+
                     const url = uploadLinks.find((uploadLink: UploadLink) => uploadLink.id === menuItemId.replace(MenuIds.Destination, ''))?.url;
 
                     const code = `
@@ -76,8 +85,9 @@ enum MenuIds {
                     const response = await r.json();
                     if (response.result === true) {
                         await browser.tabs.sendMessage(tab!.id!, {
-                            type: 'notification',
+                            type: 'update-notification',
                             options: {
+                                id: notificationId,
                                 level: NotificationLevel.Success,
                                 title: 'Success',
                                 message: 'Picture was sent successfully',
@@ -85,8 +95,9 @@ enum MenuIds {
                         })
                     } else if (response.result === 'duplicate') {
                         await browser.tabs.sendMessage(tab!.id!, {
-                            type: 'notification',
+                            type: 'update-notification',
                             options: {
+                                id: notificationId,
                                 level: NotificationLevel.Error,
                                 title: 'Duplicate',
                                 message: 'This image was sent before',
@@ -95,8 +106,9 @@ enum MenuIds {
                     } else {
                         console.error(response);
                         await browser.tabs.sendMessage(tab!.id!, {
-                            type: 'notification',
+                            type: 'update-notification',
                             options: {
+                                id: notificationId,
                                 level: NotificationLevel.Error,
                                 title: 'Error',
                                 message: 'A server-side error has occurred while sending picture',
@@ -106,8 +118,9 @@ enum MenuIds {
                 } catch (e) {
                     console.error(e);
                     await browser.tabs.sendMessage(tab!.id!, {
-                        type: 'notification',
+                        type: 'update-notification',
                         options: {
+                            id: notificationId,
                             level: NotificationLevel.Error,
                             title: 'Error',
                             message: 'An extension-side error has occurred while sending picture',

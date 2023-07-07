@@ -46,6 +46,7 @@ export interface Vector2 {
 
 export enum NotificationLevel {
     Success = 'green',
+    Loading = 'grey',
     Error = 'red',
 }
 
@@ -53,6 +54,10 @@ export interface NotificationOptions {
     level: NotificationLevel;
     title?: string;
     message: string;
+}
+
+export interface UpdateNotificationOptions extends NotificationOptions {
+    id: string;
 }
 
 export interface NotificationEntry extends NotificationOptions {
@@ -64,5 +69,6 @@ export type RuntimeMessage = {
     type: 'notification',
     options: NotificationOptions,
 } | {
-    type: 'placeholder',
+    type: 'update-notification',
+    options: UpdateNotificationOptions,
 };
