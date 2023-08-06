@@ -135,6 +135,14 @@ const togglePlaying = () => {
     else
         video.value!.pause();
 }
+
+const pause = () => {
+    video.value!.pause();
+}
+
+defineExpose({
+    pause,
+});
 </script>
 
 <template>

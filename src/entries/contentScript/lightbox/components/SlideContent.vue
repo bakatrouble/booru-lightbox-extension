@@ -29,6 +29,7 @@ const data = reactive({
 });
 
 const image = ref<HTMLImageElement>();
+const video = ref<VideoPlayer>();
 
 watch(() => data.loaded, (loaded) => {
     if (loaded) {
@@ -38,6 +39,11 @@ watch(() => data.loaded, (loaded) => {
         }
     }
 });
+
+watch(() => props.isCurrent, isCurrent => {
+    if (!props.isCurrent)
+        (video.value as VideoPlayer)?.pause();
+})
 
 onMounted(() => {
     onWindowResize();
@@ -207,6 +213,7 @@ const onVideoLoad = (width: number, height: number) => {
 
             <video-player
                 v-else-if="media.item.type === MediaType.Video"
+                ref="video"
                 :dragging="data.dragging"
                 :position="data.position"
                 :current-ratio="data.currentRatio"
