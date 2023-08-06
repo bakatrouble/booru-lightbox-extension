@@ -2,7 +2,7 @@
 import { mdiFullscreen, mdiPause, mdiPlay, mdiVolumeHigh, mdiVolumeLow, mdiVolumeOff } from '@mdi/js';
 import _ from 'lodash';
 import { Portal } from 'portal-vue';
-import { computed, defineComponent, onMounted, onUnmounted, PropType, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, PropType, reactive, ref, watch } from 'vue'
 import { Vector2 } from '~/entries/contentScript/types';
 import { formatDuration } from '../utils';
 

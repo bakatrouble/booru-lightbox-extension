@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { PropType, reactive, defineProps, watch, ref, onMounted, onUnmounted } from 'vue'
-import LoadingPlaceholder from '~/entries/contentScript/lightbox/components/LoadingPlaceholder.vue';
-import VideoPlayer from '~/entries/contentScript/lightbox/components/VideoPlayer.vue';
+import { PropType, reactive, defineProps, watch, ref, onMounted, onUnmounted, ComponentPublicInstance } from 'vue'
+import LoadingPlaceholder from './LoadingPlaceholder.vue';
+import VideoPlayer from './VideoPlayer.vue';
 import { LoadedMediaListItem, MediaType, Vector2 } from '~/entries/contentScript/types';
 
 const props = defineProps({
@@ -29,7 +29,7 @@ const data = reactive({
 });
 
 const image = ref<HTMLImageElement>();
-const video = ref<VideoPlayer>();
+const video = ref<ComponentPublicInstance<typeof VideoPlayer>>();
 
 watch(() => data.loaded, (loaded) => {
     if (loaded) {
@@ -42,7 +42,7 @@ watch(() => data.loaded, (loaded) => {
 
 watch(() => props.isCurrent, isCurrent => {
     if (!props.isCurrent)
-        (video.value as VideoPlayer)?.pause();
+        video.value?.pause();
 })
 
 onMounted(() => {
