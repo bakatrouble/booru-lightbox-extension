@@ -3,6 +3,7 @@ import { PropType, reactive, defineProps, watch, ref, onMounted, onUnmounted, Co
 import LoadingPlaceholder from './LoadingPlaceholder.vue';
 import VideoPlayer from './VideoPlayer.vue';
 import { LoadedMediaListItem, MediaType, Vector2 } from '~/entries/contentScript/types';
+import browser from 'webextension-polyfill';
 
 const props = defineProps({
     media: {
@@ -26,6 +27,7 @@ const data = reactive({
     position: { x: 0, y: 0 } satisfies Vector2,
     draggingStartPosition: { x: 0, y: 0 } satisfies Vector2,
     draggingStart: { x: 0, y: 0 } satisfies Vector2,
+    zoomRatio: .25,
 });
 
 const image = ref<HTMLImageElement>();
@@ -48,6 +50,9 @@ watch(() => props.isCurrent, isCurrent => {
 onMounted(() => {
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
+    browser.storage.local.get([
+        'zoomRatio',
+    ]).then(({ zoomRatio }) => console.log('loaded zoomRatio', data.zoomRatio = zoomRatio || .25));
 });
 
 onUnmounted(() => {
@@ -67,7 +72,7 @@ const onDoubleClick = (e: MouseEvent) => {
 const onWheel = (e: WheelEvent) => {
     e.stopPropagation();
     const direction = Math.sign(-e.deltaY || e.deltaX);
-    const delta = direction * .25;
+    const delta = direction * data.zoomRatio;
     const newRatio = data.currentRatio * (1 + delta);
     const mouseX = e.clientX;
     const mouseY = e.clientY;

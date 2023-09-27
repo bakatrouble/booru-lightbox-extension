@@ -35,8 +35,10 @@ const sharedManifest = {
     browser_specific_settings: {
         gecko: {
             id: "booru@bakatrouble.me",
+            update_url: 'https://booru.drop.bakatrouble.me/manifest.json',
         },
     },
+
 };
 
 const ManifestV2 = {
