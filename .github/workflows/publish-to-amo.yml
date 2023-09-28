@@ -31,7 +31,11 @@ jobs:
         with:
           name: signed-extension
           path: web-ext-artifacts
+      - name: Extract npm version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
       - name: Create a release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "web-ext-artifacts/*.xpi"
+          tag: ${{ steps.package-version.outputs.current-version }}

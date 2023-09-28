@@ -93,6 +93,8 @@ const onPlay = () => {
 }
 
 const onMouseMove = () => {
+    if (!props.isShowing)
+        return;
     data.showToolbar = true;
     hideToolbar();
 }
@@ -140,6 +142,12 @@ const pause = () => {
     video.value!.pause();
 }
 
+watch(() => props.isShowing, (isShowing) => {
+    if (!isShowing) {
+        hideToolbar();
+    }
+});
+
 defineExpose({
     pause,
 });
@@ -177,9 +185,9 @@ defineExpose({
         </div>
 
         <portal to="video-toolbar" :disabled="!isShowing || !data.loaded">
-            <div class="video-toolbar-wrapper">
+            <div :class="['video-toolbar-wrapper']">
                 <v-sheet
-                    :class="[ 'pa-2', 'video-toolbar', { visible: data.showToolbar } ]"
+                    :class="[ 'pa-2', 'video-toolbar', { visible: data.showToolbar && isShowing } ]"
                     rounded
                     @mouseenter="data.toolbarLock = true"
                     @mouseleave="data.toolbarLock = false"
@@ -290,6 +298,9 @@ defineExpose({
         display: flex
         justify-content: center
         pointer-events: none
+
+        &-hidden
+
 
     &.visible
         opacity: 1
