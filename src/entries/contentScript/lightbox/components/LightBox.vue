@@ -200,6 +200,8 @@ const onKeyPress = async (e: KeyboardEvent) => {
         const keysDiff = hotkeyKeys.filter(x => !pressedKeys.includes(x))
             .concat(pressedKeys.filter(x => !hotkeyKeys.includes(x)));
         if (keysDiff.length === 0) {
+            e.preventDefault();
+            e.stopPropagation();
             await upload(uploadLink);
             return;
         }

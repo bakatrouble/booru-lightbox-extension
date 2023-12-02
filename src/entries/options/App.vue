@@ -134,7 +134,7 @@ const save = async () => {
 .table
     max-width: 1024px
     display: grid
-    grid-template-columns: repeat(3, 1fr) auto
+    grid-template-columns: repeat(4, 1fr) auto
     grid-column-gap: 8px
     grid-row-gap: 8px
 
