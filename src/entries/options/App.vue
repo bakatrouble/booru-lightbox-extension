@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { mdiArrowDown, mdiArrowUp, mdiContentSave, mdiDelete, mdiPlus } from '@mdi/js';
+import { mdiArrowDown, mdiArrowUp, mdiContentSave, mdiDelete, mdiKeyboard, mdiPlus } from '@mdi/js';
 import _ from 'lodash';
 import { onMounted, reactive } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
+import HotkeyButton from '~/entries/shared/HotkeyButton.vue';
 
 const data = reactive({
     uploadLinks: [] as UploadLink[],
@@ -18,6 +19,7 @@ onMounted(async () => {
     ]);
     data.uploadLinks = savedData.uploadLinks || [] as UploadLink[];
     data.zoomRatio = savedData.zoomRatio || .25;
+    console.log(data.uploadLinks);
 });
 
 const getUuid = () => uuidv4();
@@ -28,6 +30,7 @@ const save = async () => {
         zoomRatio: data.zoomRatio,
     });
     data.savedNotification = true;
+    console.log(_.cloneDeep(data.uploadLinks));
 }
 </script>
 
@@ -61,6 +64,9 @@ const save = async () => {
                                     label="URL"
                                 />
                             </span>
+                            <span>
+                                <hotkey-button v-model="item.hotkey" />
+                            </span>
                             <span class="d-flex align-center">
                                 <v-btn
                                     variant="text"
@@ -86,7 +92,7 @@ const save = async () => {
                             <v-btn
                                 class="mr-2"
                                 :prepend-icon="mdiPlus"
-                                @click="data.uploadLinks.push({ id: getUuid(), name: '', shortName: '', url: '' })"
+                                @click="data.uploadLinks.push({ id: getUuid(), name: '', shortName: '', url: '', hotkey: [] })"
                             >
                                 Add
                             </v-btn>

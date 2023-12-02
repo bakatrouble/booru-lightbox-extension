@@ -67,6 +67,7 @@ const onDoubleClick = (e: MouseEvent) => {
         x: (data.screenSize.x - data.mediaSize.x * data.currentRatio) / 2,
         y: (data.screenSize.y - data.mediaSize.y * data.currentRatio) / 2,
     };
+    return true;
 };
 
 const onWheel = (e: WheelEvent) => {

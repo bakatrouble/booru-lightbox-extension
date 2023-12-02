@@ -36,6 +36,7 @@ import {
     Vector2,
 } from '~/entries/contentScript/types';
 import { getImageBase64 } from '~/entries/shared/getImageBase64';
+import _ from 'lodash';
 
 const props = defineProps({
     show: {
@@ -66,6 +67,7 @@ const data = reactive({
     draggingStart: { x: 0, y: 0 } satisfies Vector2,
     loadedImages: [] as (LoadedMediaListItem | false | undefined)[],
     uploadLinks: [] as UploadLink[],
+    pressedKeys: new Set<string>(),
 });
 
 const prevIdx = computed(() => props.currentIdx - 1);
@@ -127,11 +129,13 @@ watch(() => props.currentIdx, (val) => {
 
 onMounted(async () => {
     document.addEventListener('keydown', onKeyPress, { capture: true });
+    document.addEventListener('keyup', onKeyRelease, { capture: true });
     data.uploadLinks = (await browser.storage.local.get('uploadLinks')).uploadLinks || [];
 });
 
 onUnmounted(() => {
     document.removeEventListener('keydown', onKeyPress);
+    document.removeEventListener('keyup', onKeyRelease);
 });
 
 const onMouseDown = (e: MouseEvent) => {
@@ -189,6 +193,18 @@ const onKeyPress = async (e: KeyboardEvent) => {
         e.stopPropagation();
     }
 
+    data.pressedKeys.add(e.key);
+    for (const uploadLink of data.uploadLinks) {
+        const hotkeyKeys = uploadLink.hotkey;
+        const pressedKeys = [...data.pressedKeys];
+        const keysDiff = hotkeyKeys.filter(x => !pressedKeys.includes(x))
+            .concat(pressedKeys.filter(x => !hotkeyKeys.includes(x)));
+        if (keysDiff.length === 0) {
+            await upload(uploadLink);
+            return;
+        }
+    }
+
     if (e.key === 'Escape') {
         close();
     } else if (e.key === 'ArrowLeft') {
@@ -213,6 +229,13 @@ const onKeyPress = async (e: KeyboardEvent) => {
         return;
     }
 };
+
+const onKeyRelease = (e: KeyboardEvent) => {
+    if (!props.show)
+        return;
+
+    data.pressedKeys.delete(e.key);
+}
 
 const close = () => {
     data.exitDirection = Math.sign(data.draggingOffset.y);
@@ -385,6 +408,7 @@ const upload = async (uploadLink: UploadLink) => {
     transition: opacity .3s
     pointer-events: none
     display: block !important
+    user-select: none
 
     &.show
         opacity: 1

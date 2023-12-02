@@ -13,5 +13,6 @@ declare global {
         name: string;
         shortName: string;
         url: string;
+        hotkey: string[];
     }
 }
