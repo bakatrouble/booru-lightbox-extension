@@ -22,13 +22,15 @@ const data = reactive({
 });
 
 const updateLocationHash = () => {
+    const url = new URL(location.href);
+    const parsedQs = qs.parse(location.hash.slice(1));
     if (!data.show) {
-        history.replaceState(null, '', ' ');
+        parsedQs.slide = undefined;
     } else {
-        const parsedQs = qs.parse(location.hash.slice(1));
         parsedQs.slide = data.currentIdx.toString();
-        location.replace(`#${qs.stringify(parsedQs)}`);
     }
+    url.hash = `#${qs.stringify(parsedQs)}`;
+    location.replace(url);
 }
 
 watch([() => data.currentIdx, () => data.show], updateLocationHash);
