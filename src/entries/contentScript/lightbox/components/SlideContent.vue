@@ -50,7 +50,7 @@ watch(() => props.isCurrent, isCurrent => {
 onMounted(() => {
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
-    browser.storage.local.get([
+    browser.storage.sync.get([
         'zoomRatio',
     ]).then(({ zoomRatio }) => console.log('loaded zoomRatio', data.zoomRatio = zoomRatio || .25));
 });

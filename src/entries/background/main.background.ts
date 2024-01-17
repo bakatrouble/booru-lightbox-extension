@@ -11,7 +11,7 @@ enum MenuIds {
 }
 
 (async () => {
-    const uploadLinks = (await browser.storage.local.get('uploadLinks')).uploadLinks || [] as UploadLink[];
+    const uploadLinks = (await browser.storage.sync.get('uploadLinks')).uploadLinks || [] as UploadLink[];
 
     browser.menus.create({
         id: MenuIds.Root,

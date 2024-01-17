@@ -130,7 +130,7 @@ watch(() => props.currentIdx, (val) => {
 onMounted(async () => {
     document.addEventListener('keydown', onKeyPress, { capture: true });
     document.addEventListener('keyup', onKeyRelease, { capture: true });
-    data.uploadLinks = (await browser.storage.local.get('uploadLinks')).uploadLinks || [];
+    data.uploadLinks = (await browser.storage.sync.get('uploadLinks')).uploadLinks || [];
 });
 
 onUnmounted(() => {

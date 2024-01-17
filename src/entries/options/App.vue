@@ -13,7 +13,7 @@ const data = reactive({
 });
 
 onMounted(async () => {
-    const savedData = await browser.storage.local.get([
+    const savedData = await browser.storage.sync.get([
         'uploadLinks',
         'zoomRatio',
     ]);
@@ -25,7 +25,7 @@ onMounted(async () => {
 const getUuid = () => uuidv4();
 
 const save = async () => {
-    await browser.storage.local.set({
+    await browser.storage.sync.set({
         uploadLinks: _.cloneDeep(data.uploadLinks),
         zoomRatio: data.zoomRatio,
     });
