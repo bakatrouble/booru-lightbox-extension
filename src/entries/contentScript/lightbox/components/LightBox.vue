@@ -4,12 +4,9 @@ import {
     mdiChevronRight,
     mdiClose,
     mdiMagnify,
-    mdiRadioboxBlank,
-    mdiRadioboxMarked,
     mdiUpload,
 } from '@mdi/js';
 import Timeout from 'await-timeout';
-import { calc } from 'csscalc';
 import { PortalTarget } from 'portal-vue';
 import {
     computed,
@@ -76,10 +73,6 @@ const currentMedia = computed(() => {
     return undefined;
 });
 const isHorizontalSlide = computed(() => Math.abs(data.draggingOffset.x * 2) > Math.abs(data.draggingOffset.y));
-const closeGesture = computed(() => Math.abs(data.draggingOffset.y) > calc('100vh / 3'));
-const prevGesture = computed(() => data.draggingOffset.x > calc('100vw / 3'));
-const nextGesture = computed(() => data.draggingOffset.x < -calc('100vw / 3'));
-const gesture = computed(() => closeGesture.value || prevGesture.value || nextGesture.value);
 
 const cancelEvent = (e: Event) => e.preventDefault();
 
@@ -104,15 +97,6 @@ const dragHandler = ({ movement: [x, y], dragging, swipe: [swipeX, swipeY] }: Fu
         data.draggingOffset = { x: 0, y: 0 };
     }
 };
-
-const pinchHandler = ({ da: [distance], pinching, origin: [x, y], event, offset: [offsetDistance] }: FullGestureState<'pinch'>) => {
-    event?.preventDefault();
-    if (!data.pinching && pinching) {
-        // pinch start
-        data.pinching = true;
-    }
-    console.log(distance, x, y, offsetDistance);
-}
 
 watch(() => props.imageList, (val) => {
     data.loadedImages = new Array(val!.length).fill(undefined);
@@ -352,13 +336,6 @@ const upload = async (uploadLink: UploadLink) => {
                     </v-btn>
                 </template>
             </template>
-            <v-btn
-                variant="text"
-                disabled="true"
-                density="comfortable"
-                :icon="gesture ? mdiRadioboxMarked : mdiRadioboxBlank"
-                :style="{ color: gesture ? 'lightgreen' : 'white' }"
-            />
             <v-btn
                 variant="text"
                 density="comfortable"

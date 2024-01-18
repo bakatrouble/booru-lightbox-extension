@@ -7,8 +7,6 @@ import browser from 'webextension-polyfill';
 import { FullGestureState, rubberbandIfOutOfBounds } from '@vueuse/gesture';
 import { Lethargy } from 'lethargy-ts';
 
-const lethargy = new Lethargy();
-
 const props = defineProps({
     media: {
         type: Object as PropType<LoadedMediaListItem>,
@@ -23,6 +21,8 @@ const props = defineProps({
 
 const emit = defineEmits(['zoomStart', 'zoomEnd']);
 
+const lethargy = new Lethargy();
+
 const data = reactive({
     loaded: false,
     mediaSize: { x: 0, y: 0 } satisfies Vector2,
@@ -33,7 +33,6 @@ const data = reactive({
     position: { x: 0, y: 0 } satisfies Vector2,
     draggingStartPosition: { x: 0, y: 0 } satisfies Vector2,
     draggingStart: { x: 0, y: 0 } satisfies Vector2,
-    zoomRatio: .25,
     pinching: false,
     zoomedIn: false,
 });
@@ -58,9 +57,6 @@ watch(() => props.isCurrent, isCurrent => {
 onMounted(() => {
     onWindowResize();
     window.addEventListener('resize', onWindowResize);
-    browser.storage.sync.get([
-        'zoomRatio',
-    ]).then(({ zoomRatio }) => console.log('loaded zoomRatio', data.zoomRatio = zoomRatio || .25));
 });
 
 onUnmounted(() => {
@@ -80,27 +76,8 @@ const onDoubleClick = (e: MouseEvent) => {
     return true;
 };
 
-const onWheel = (e: WheelEvent) => {
-    e.stopPropagation();
-    const direction = Math.sign(-e.deltaY || e.deltaX);
-    const delta = direction * data.zoomRatio;
-    const newRatio = data.currentRatio * (1 + delta);
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-    const mouseXInImageSpace = mouseX - data.position.x;
-    const mouseYInImageSpace = mouseY - data.position.y;
-    const newMouseXInImageSpace = mouseXInImageSpace * newRatio / data.currentRatio;
-    const newMouseYInImageSpace = mouseYInImageSpace * newRatio / data.currentRatio;
-    data.position = {
-        x: mouseX - newMouseXInImageSpace,
-        y: mouseY - newMouseYInImageSpace,
-    }
-    data.currentRatio = newRatio;
-};
-
 const dragHandler = ({ dragging, delta: [deltaX, deltaY] }: FullGestureState<'drag'>) => {
     if (data.dragging && !dragging) {
-        console.log('dragging finished');
         data.dragging = data.pinching = false;
 
         {
@@ -186,7 +163,6 @@ const pinchHandler = ({ da: [distance], pinching, origin: [ox, oy], event, movem
 const wheelHandler = ({ delta: [x, y], distance, event, wheeling }: FullGestureState<'wheel'>) => {
     if (lethargy.check(event as WheelEvent)) {
         const direction = Math.sign(-y || x);
-        const delta = direction * data.zoomRatio;
         const newRatio = Math.max(data.initialRatio * .1, data.currentRatio * (1 + Math.max(-1, (-y || x) / 500)));
         const mouseX = (event as WheelEvent).clientX;
         const mouseY = (event as WheelEvent).clientY;

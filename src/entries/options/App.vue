@@ -8,17 +8,17 @@ import HotkeyButton from '~/entries/shared/HotkeyButton.vue';
 
 const data = reactive({
     uploadLinks: [] as UploadLink[],
-    zoomRatio: .25,
+    // zoomRatio: .25,
     savedNotification: false,
 });
 
 onMounted(async () => {
     const savedData = await browser.storage.sync.get([
         'uploadLinks',
-        'zoomRatio',
+        // 'zoomRatio',
     ]);
     data.uploadLinks = savedData.uploadLinks || [] as UploadLink[];
-    data.zoomRatio = savedData.zoomRatio || .25;
+    // data.zoomRatio = savedData.zoomRatio || .25;
     console.log(data.uploadLinks);
 });
 
@@ -27,7 +27,7 @@ const getUuid = () => uuidv4();
 const save = async () => {
     await browser.storage.sync.set({
         uploadLinks: _.cloneDeep(data.uploadLinks),
-        zoomRatio: data.zoomRatio,
+        // zoomRatio: data.zoomRatio,
     });
     data.savedNotification = true;
     console.log(_.cloneDeep(data.uploadLinks));
@@ -100,14 +100,14 @@ const save = async () => {
                     </div>
                 </div>
             </v-sheet>
-            <v-sheet rounded class="pa-2">
+            <!--<v-sheet rounded class="pa-2">
                 <h2 class="text-h6 mb-4">Zoom ratio</h2>
                 <v-text-field
                     v-model="data.zoomRatio"
                     variant="solo-filled"
                     label="Zoom ratio"
                 />
-            </v-sheet>
+            </v-sheet>-->
             <v-sheet rounded class="align-self-end mt-2 pa-2">
                 <v-btn
                     :prepend-icon="mdiContentSave"
