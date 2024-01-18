@@ -29,8 +29,9 @@ const updateLocationHash = () => {
     } else {
         parsedQs.slide = data.currentIdx.toString();
     }
-    url.hash = `#${qs.stringify(parsedQs)}`;
-    location.replace(url);
+    const stringifiedQs = qs.stringify(parsedQs);
+    url.hash = stringifiedQs === '' ? '' : `#${stringifiedQs}`;
+    history.replaceState('', '', url);
 }
 
 watch([() => data.currentIdx, () => data.show], updateLocationHash);

@@ -13,7 +13,6 @@ import { calc } from 'csscalc';
 import { PortalTarget } from 'portal-vue';
 import {
     computed,
-    defineComponent,
     inject,
     nextTick,
     onMounted,
@@ -29,14 +28,13 @@ import SlideContent from '~/entries/contentScript/lightbox/components/SlideConte
 import { resolveScalarOrFunction } from '~/entries/contentScript/lightbox/utils';
 import {
     LoadedMediaListItem,
-    MediaDataScalar,
     MediaListItem,
     MediaType,
     NotificationLevel,
     Vector2,
 } from '~/entries/contentScript/types';
 import { getImageBase64 } from '~/entries/shared/getImageBase64';
-import _ from 'lodash';
+import { FullGestureState } from '@vueuse/gesture';
 
 const props = defineProps({
     show: {
@@ -59,15 +57,15 @@ const $el = ref<HTMLElement>();
 
 const data = reactive({
     dragging: false,
+    pinching: false,
     noAnimations: false,
     exitDirection: 0,
-    verticalLocked: false,
-    horizontalLocked: false,
     draggingOffset: { x: 0, y: 0 } satisfies Vector2,
     draggingStart: { x: 0, y: 0 } satisfies Vector2,
     loadedImages: [] as (LoadedMediaListItem | false | undefined)[],
     uploadLinks: [] as UploadLink[],
     pressedKeys: new Set<string>(),
+    contentPosition: { x: 0, y: 0 } satisfies Vector2,
 });
 
 const prevIdx = computed(() => props.currentIdx - 1);
@@ -82,6 +80,39 @@ const closeGesture = computed(() => Math.abs(data.draggingOffset.y) > calc('100v
 const prevGesture = computed(() => data.draggingOffset.x > calc('100vw / 3'));
 const nextGesture = computed(() => data.draggingOffset.x < -calc('100vw / 3'));
 const gesture = computed(() => closeGesture.value || prevGesture.value || nextGesture.value);
+
+const cancelEvent = (e: Event) => e.preventDefault();
+
+const dragHandler = ({ movement: [x, y], dragging, swipe: [swipeX, swipeY] }: FullGestureState<'drag'>) => {
+    if (dragging) {
+        if (!data.dragging && !data.pinching) {
+            data.dragging = true;
+        } else if (!data.pinching) {
+            data.draggingOffset = { x, y };
+        }
+    } else if (!dragging && data.dragging) {
+        if (swipeX > 0) {
+            if (props.currentIdx > 0)
+                emit('slideDelta', -1);
+        } else if (swipeX < 0) {
+            if (props.currentIdx < props.imageList!.length - 1)
+                emit('slideDelta', +1);
+        } else if (swipeY !== 0) {
+            close();
+        }
+        data.dragging = false;
+        data.draggingOffset = { x: 0, y: 0 };
+    }
+};
+
+const pinchHandler = ({ da: [distance], pinching, origin: [x, y], event, offset: [offsetDistance] }: FullGestureState<'pinch'>) => {
+    event?.preventDefault();
+    if (!data.pinching && pinching) {
+        // pinch start
+        data.pinching = true;
+    }
+    console.log(distance, x, y, offsetDistance);
+}
 
 watch(() => props.imageList, (val) => {
     data.loadedImages = new Array(val!.length).fill(undefined);
@@ -120,6 +151,10 @@ watch(() => props.show, async (val, oldVal) => {
             data.noAnimations = false;
         }
         await loadImages(props.currentIdx!);
+
+        document.addEventListener('wheel', cancelEvent, { passive: false });
+        document.addEventListener('gesturestart', cancelEvent);
+        document.addEventListener('gesturechange', cancelEvent);
     }
 });
 
@@ -137,52 +172,6 @@ onUnmounted(() => {
     document.removeEventListener('keydown', onKeyPress);
     document.removeEventListener('keyup', onKeyRelease);
 });
-
-const onMouseDown = (e: MouseEvent) => {
-    if (data.dragging || e.button !== 0)
-        return;
-    data.dragging = true;
-    data.draggingOffset = { x: 0, y: 0 };
-    data.draggingStart = {
-        x: e.clientX,
-        y: e.clientY,
-    };
-    data.horizontalLocked = data.verticalLocked = false;
-}
-
-const onMouseMove = (e: MouseEvent) => {
-    if (!data.dragging)
-        return;
-    const draggingOffset = {
-        x: e.clientX - data.draggingStart.x,
-        y: e.clientY - data.draggingStart.y,
-    };
-    data.draggingOffset = draggingOffset;
-    if (!data.horizontalLocked && !data.verticalLocked) {
-        const horAbs = Math.abs(draggingOffset.x);
-        const verAbs = Math.abs(draggingOffset.y);
-        data.horizontalLocked = horAbs > 50 && horAbs > verAbs;
-        data.verticalLocked = verAbs > 50 && verAbs > horAbs;
-    }
-}
-
-const onMouseUp = (e: MouseEvent) => {
-    if (!data.dragging || e.button !== 0)
-        return;
-    if (data.horizontalLocked) {
-        if (prevGesture.value && props.currentIdx > 0)
-            emit('slideDelta', -1);
-        else if (nextGesture.value && props.currentIdx < props.imageList!.length - 1)
-            emit('slideDelta', +1);
-    } else if (data.verticalLocked) {
-        if (closeGesture.value) {
-            close();
-        }
-    }
-    data.dragging = false;
-    data.verticalLocked = data.horizontalLocked = false;
-    data.draggingOffset = { x: 0, y: 0 };
-};
 
 const onKeyPress = async (e: KeyboardEvent) => {
     if (!props.show)
@@ -243,6 +232,10 @@ const close = () => {
     data.exitDirection = Math.sign(data.draggingOffset.y);
     emit('close');
     setTimeout(() => data.exitDirection = 0, 300);
+
+    document.removeEventListener('wheel', cancelEvent);
+    document.removeEventListener('gesturestart', cancelEvent);
+    document.removeEventListener('gesturechange', cancelEvent);
 };
 
 const locateFunc: (el: HTMLElement) => void = inject('locate') as any;
@@ -305,6 +298,7 @@ const upload = async (uploadLink: UploadLink) => {
 <template>
     <div ref="$el" :class="[ 'lightbox', { show } ]">
         <div
+            v-drag="dragHandler"
             :class="[
                 'wrapper',
                 `current${currentIdx}`,
@@ -316,12 +310,9 @@ const upload = async (uploadLink: UploadLink) => {
                 }
             ]"
             :style="{
-                left: data.dragging && (isHorizontalSlide && !data.verticalLocked || data.horizontalLocked) ? `calc(-100vw * ${currentIdx} + ${data.draggingOffset.x}px)` : `calc(-100vw * ${currentIdx})`,
-                top: data.dragging && (!isHorizontalSlide && !data.horizontalLocked || data.verticalLocked) ? `${data.draggingOffset.y}px` : 0,
+                left: data.dragging && isHorizontalSlide ? `calc(-100vw * ${currentIdx} + ${data.draggingOffset.x}px)` : `calc(-100vw * ${currentIdx})`,
+                top: data.dragging && !isHorizontalSlide ? `${data.draggingOffset.y}px` : 0,
             }"
-            @mousedown="onMouseDown"
-            @mousemove="onMouseMove"
-            @mouseup="onMouseUp"
         >
             <div
                 v-for="(item, idx) in data.loadedImages"
@@ -336,6 +327,8 @@ const upload = async (uploadLink: UploadLink) => {
                         :media="item as any"
                         :index="idx"
                         :is-current="show && idx === currentIdx"
+                        @zoom-start="() => data.pinching = true"
+                        @zoom-end="() => data.pinching = false"
                     />
                 </template>
                 <loading-placeholder v-else>Loading metadata...</loading-placeholder>

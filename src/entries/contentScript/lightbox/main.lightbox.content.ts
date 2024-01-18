@@ -7,6 +7,7 @@ import 'vuetify/lib/styles/main.sass';
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 import PortalVue from 'portal-vue';
 import Timeout from 'await-timeout';
+import { GesturePlugin } from '@vueuse/gesture';
 
 export let app: App;
 
@@ -36,7 +37,8 @@ if (collectImagesModule) {
             }
             app = createApp(Primary, { collectImagesModule })
                 .use(vuetify)
-                .use(PortalVue);
+                .use(PortalVue)
+                .use(GesturePlugin);
             app.mount(appRoot);
             await Timeout.set(10);
             const themeStylesheet = document.querySelector('#vuetify-theme-stylesheet') as HTMLLinkElement;
