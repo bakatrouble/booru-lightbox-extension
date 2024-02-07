@@ -15,11 +15,20 @@ const data = reactive({
 onMounted(async () => {
     const savedData = await browser.storage.sync.get([
         'uploadLinks',
-        // 'zoomRatio',
     ]);
     data.uploadLinks = savedData.uploadLinks || [] as UploadLink[];
-    // data.zoomRatio = savedData.zoomRatio || .25;
-    console.log(data.uploadLinks);
+    console.log(_.cloneDeep(data.uploadLinks));
+
+    let ulUpdated = false;
+    data.uploadLinks.forEach(ul => {
+        if (!ul.id) {
+            ul.id = getUuid();
+            ulUpdated = true;
+        }
+    });
+    if (ulUpdated) {
+        await save();
+    }
 });
 
 const getUuid = () => uuidv4();
@@ -27,7 +36,6 @@ const getUuid = () => uuidv4();
 const save = async () => {
     await browser.storage.sync.set({
         uploadLinks: _.cloneDeep(data.uploadLinks),
-        // zoomRatio: data.zoomRatio,
     });
     data.savedNotification = true;
     console.log(_.cloneDeep(data.uploadLinks));

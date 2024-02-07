@@ -299,9 +299,6 @@ defineExpose({
         justify-content: center
         pointer-events: none
 
-        &-hidden
-
-
     &.visible
         opacity: 1
         pointer-events: all
