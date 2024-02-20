@@ -76,9 +76,13 @@ const isHorizontalSlide = computed(() => Math.abs(data.draggingOffset.x * 2) > M
 
 const cancelEvent = (e: Event) => e.preventDefault();
 
-const dragHandler = ({ movement: [x, y], dragging, swipe: [swipeX, swipeY] }: FullGestureState<'drag'>) => {
+const dragHandler = ({ movement: [x, y], dragging, swipe: [swipeX, swipeY], event, cancel }: FullGestureState<'drag'>) => {
     if (dragging) {
         if (!data.dragging && !data.pinching) {
+            if (typeof (event as MouseEvent).button !== 'undefined' && (event as MouseEvent).button !== 0) {
+                cancel();
+                return;
+            }
             data.dragging = true;
         } else if (!data.pinching) {
             data.draggingOffset = { x, y };

@@ -76,7 +76,7 @@ const onDoubleClick = (e: MouseEvent) => {
     return true;
 };
 
-const dragHandler = ({ dragging, delta: [deltaX, deltaY] }: FullGestureState<'drag'>) => {
+const dragHandler = ({ dragging, delta: [deltaX, deltaY], event, cancel }: FullGestureState<'drag'>) => {
     if (data.dragging && !dragging) {
         data.dragging = data.pinching = false;
 
@@ -120,6 +120,10 @@ const dragHandler = ({ dragging, delta: [deltaX, deltaY] }: FullGestureState<'dr
         return;
 
     if (!data.dragging && dragging) {
+        if (typeof (event as MouseEvent).button !== 'undefined' && (event as MouseEvent).button !== 0) {
+            cancel();
+            return;
+        }
         data.dragging = true;
     } else if (data.dragging && dragging) {
         data.position.x = data.position.x + deltaX;

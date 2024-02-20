@@ -60,5 +60,6 @@ module.exports = {
         'max-params': "off",
         'no-inner-declarations': 'off',
         'guard-for-in': 'off',
+        'complexity': 'off',
     },
 };
