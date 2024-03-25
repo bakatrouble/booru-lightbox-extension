@@ -17,7 +17,7 @@ onMounted(() => {
     styleEl.classList.add('lightbox-locate-style');
     styleEl.innerHTML = `
             .lightbox-locate-wrapper {
-                position: fixed;
+                position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
@@ -28,7 +28,7 @@ onMounted(() => {
                 position: absolute;
                 border: 5px solid #ff0000;
                 pointer-events: none;
-                animation: lightbox-locate-blink 2s ease infinite;
+                animation: lightbox-locate-blink .5s ease infinite;
             }
 
             @keyframes lightbox-locate-blink {

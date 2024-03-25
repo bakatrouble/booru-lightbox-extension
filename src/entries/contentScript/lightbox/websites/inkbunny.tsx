@@ -11,7 +11,7 @@ const inkbunnyCollectImages: CollectImagesOptions = {
                     const doc = parser.parseFromString((await axios.get((el as HTMLAnchorElement).href)).data as string, 'text/html');
                     return (doc.querySelector('.content.magicboxParent > a') as HTMLAnchorElement).href;
                 },
-                label: <a href={(el as HTMLAnchorElement).href}>Show image</a>,
+                label: <a href={(el as HTMLAnchorElement).href} target="_blank">Show image</a>,
                 type: MediaType.Image,
             },
         })),

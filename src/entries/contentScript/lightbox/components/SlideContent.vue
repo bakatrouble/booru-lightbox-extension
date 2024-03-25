@@ -50,8 +50,10 @@ watch(() => data.loaded, (loaded) => {
 });
 
 watch(() => props.isCurrent, isCurrent => {
-    if (!props.isCurrent)
+    if (!props.isCurrent) {
         video.value?.pause();
+        unzoom();
+    }
 })
 
 onMounted(() => {
@@ -63,9 +65,7 @@ onUnmounted(() => {
     window.removeEventListener('resize', onWindowResize);
 });
 
-const onDoubleClick = (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+const unzoom = () => {
     data.currentRatio = data.initialRatio;
     data.position = {
         x: (data.screenSize.x - data.mediaSize.x * data.currentRatio) / 2,
@@ -73,6 +73,12 @@ const onDoubleClick = (e: MouseEvent) => {
     };
     data.zoomedIn = false;
     emit('zoomEnd');
+}
+
+const onDoubleClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    unzoom();
     return true;
 };
 
@@ -190,16 +196,23 @@ const onWindowResize = () => {
         y: window.innerHeight,
     };
     let newInitialRatio = 1;
+    let resetPosition = false;
     if (data.mediaSize.x && data.mediaSize.y && (data.mediaSize.x > data.screenSize.x || data.mediaSize.y > data.screenSize.y))
         newInitialRatio = Math.min(data.screenSize.x / data.mediaSize.x, data.screenSize.y / data.mediaSize.y);
-    if (data.initialRatio === data.currentRatio)
+    if (data.initialRatio === data.currentRatio) {
         data.currentRatio = newInitialRatio;
+        resetPosition = true;
+    }
     data.initialRatio = newInitialRatio;
-    if (!data.loaded) {
+    if (!data.loaded || resetPosition) {
         data.position = {
             x: data.screenSize.x / 2,
             y: data.screenSize.y / 2,
         };
+        if (resetPosition) {
+            data.position.x -= data.currentRatio * image.value!.naturalWidth / 2;
+            data.position.y -= data.currentRatio * image.value!.naturalHeight / 2;
+        }
     }
 }
 

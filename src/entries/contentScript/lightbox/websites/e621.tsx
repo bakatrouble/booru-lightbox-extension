@@ -6,7 +6,7 @@ const e621CollectImages: CollectImagesOptions = {
             el: el as HTMLElement,
             item: {
                 src: el.getAttribute('data-file-url')!,
-                label: <a href={el.querySelector('a')!.href}>Show image</a>,
+                label: <a href={el.querySelector('a')!.href} target="_blank">Show image</a>,
                 type: el.getAttribute('data-file-ext') === 'webm' ? MediaType.Video : MediaType.Image,
             },
         })),
