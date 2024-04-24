@@ -5,7 +5,7 @@ import VideoPlayer from './VideoPlayer.vue';
 import { LoadedMediaListItem, MediaType, Vector2 } from '~/entries/contentScript/types';
 import browser from 'webextension-polyfill';
 import { FullGestureState, rubberbandIfOutOfBounds } from '@vueuse/gesture';
-import { Lethargy } from 'lethargy-ts';
+import { getWheelEvent, Lethargy } from 'lethargy-ts';
 
 const props = defineProps({
     media: {
@@ -171,23 +171,23 @@ const pinchHandler = ({ da: [distance], pinching, origin: [ox, oy], event, movem
 }
 
 const wheelHandler = ({ delta: [x, y], distance, event, wheeling }: FullGestureState<'wheel'>) => {
-    if (lethargy.check(event as WheelEvent)) {
-        const direction = Math.sign(-y || x);
-        const newRatio = Math.max(data.initialRatio * .1, data.currentRatio * (1 + Math.max(-1, (-y || x) / 500)));
-        const mouseX = (event as WheelEvent).clientX;
-        const mouseY = (event as WheelEvent).clientY;
-        const mouseXInImageSpace = mouseX - data.position.x;
-        const mouseYInImageSpace = mouseY - data.position.y;
-        const newMouseXInImageSpace = mouseXInImageSpace * newRatio / data.currentRatio;
-        const newMouseYInImageSpace = mouseYInImageSpace * newRatio / data.currentRatio;
-        data.position = {
-            x: mouseX - newMouseXInImageSpace,
-            y: mouseY - newMouseYInImageSpace,
-        }
-        data.currentRatio = newRatio;
-        data.zoomedIn = true;
-        emit('zoomStart');
+    // if (lethargy.check(getWheelEvent(event as WheelEvent) as unknown as WheelEvent)) {
+    const direction = Math.sign(-y || x);
+    const newRatio = Math.max(data.initialRatio * .1, data.currentRatio * (1 + Math.max(-1, (-y || x) / 500)));
+    const mouseX = (event as WheelEvent).clientX;
+    const mouseY = (event as WheelEvent).clientY;
+    const mouseXInImageSpace = mouseX - data.position.x;
+    const mouseYInImageSpace = mouseY - data.position.y;
+    const newMouseXInImageSpace = mouseXInImageSpace * newRatio / data.currentRatio;
+    const newMouseYInImageSpace = mouseYInImageSpace * newRatio / data.currentRatio;
+    data.position = {
+        x: mouseX - newMouseXInImageSpace,
+        y: mouseY - newMouseYInImageSpace,
     }
+    data.currentRatio = newRatio;
+    data.zoomedIn = true;
+    emit('zoomStart');
+    // }
 }
 
 const onWindowResize = () => {
