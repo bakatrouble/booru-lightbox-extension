@@ -3,26 +3,60 @@
 import requests
 import json
 import pysftp
+import logging
+from halo import Halo
+from colorama import Fore
 
-release_data = requests.get('https://api.github.com/repos/bakatrouble/image-galleries-extension/releases/latest').json()
-release_version = release_data['tag_name']
-release_url = release_data['assets'][0]['browser_download_url']
+def wait_for_release():
+    while True:
+        release_data = requests.get('https://api.github.com/repos/bakatrouble/image-galleries-extension/releases/latest').json()
+        release_version = release_data['tag_name']
+        release_url = release_data['assets'][0]['browser_download_url']
 
-package = json.load(open('package.json'))
-package_version = package['version']
+        package = json.load(open('package.json'))
+        package_version = package['version']
 
-if release_version != package_version:
-    print('Release was not updated yet')
-    exit(1)
+        if release_version != package_version:
+            sleep(5)
+        else:
+            return release_version, release_url
 
-with pysftp.Connection('bakatrouble.me', username='root') as sftp:
-    sftp.get('/srv/apps/drop/subdomain_files/booru/manifest.json', 'manifest.json')
+def main():
+    spinner = Halo(text='Waiting for new release', spinner='dots')
+    spinner.start()
+    release_version, release_url = wait_for_release()
+    spinner.succeed()
+    spinner.start('Downloading manifest')
+    with pysftp.Connection('bakatrouble.me', username='root') as sftp:
+        # download manifest
+        sftp.get('/srv/apps/drop/subdomain_files/booru/manifest.json', 'manifest.json')
+        spinner.succeed()
 
-    manifest = json.load(open('manifest.json'))
-    manifest['addons']['booru@bakatrouble.me']['updates'].append({
-        'version': release_version,
-        'update_link': release_url,
-    })
-    json.dump(manifest, open('manifest.json', 'w'), indent=4)
+        # load manifest
+        spinner.start('Updating manifest')
+        manifest = json.load(open('manifest.json'))
+        updates = manifest['addons']['booru@bakatrouble.me']['updates']
 
-    sftp.put('manifest.json', '/srv/apps/drop/subdomain_files/booru/manifest.json')
+        # check whether current version is already in the manifest
+        versions = set(update['version'] for update in updates)
+        if release_version in versions:
+            spinner.fail(f'Updating manifest: Version `{release_version}` is already in the manifest')
+            return
+
+        # add current version to manifest
+        manifest['addons']['booru@bakatrouble.me']['updates'].append({
+            'version': release_version,
+            'update_link': release_url,
+        })
+        json.dump(manifest, open('manifest.json', 'w'), indent=4)
+        spinner.succeed()
+
+        # upload
+        spinner.start('Uploading manifest')
+        sftp.put('manifest.json', '/srv/apps/drop/subdomain_files/booru/manifest.json')
+        spinner.succeed()
+
+
+if __name__ == '__main__':
+    main()
+
