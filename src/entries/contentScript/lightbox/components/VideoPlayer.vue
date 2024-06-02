@@ -52,21 +52,25 @@ watch(() => video.value, (video) => {
     }
 });
 
-const hideToolbar = _.debounce(() => {
+const hideToolbarImmediately = () => {
     if (!data.toolbarLock) {
         data.showToolbar = false;
     }
-}, 2000);
+};
+
+const hideToolbar = _.debounce(hideToolbarImmediately, 2000);
 
 onMounted(() => {
     hideToolbar();
     onVolumeChange();
     document.addEventListener('mousemove', onMouseMove);
+    document.documentElement.addEventListener('mouseleave', hideToolbarImmediately);
 });
 
 onUnmounted(() => {
     hideToolbar.cancel();
     document.removeEventListener('mousemove', onMouseMove);
+    document.documentElement.removeEventListener('mouseleave', hideToolbarImmediately);
 });
 
 const onLoadedMetadata = () => {
@@ -300,7 +304,7 @@ defineExpose({
         pointer-events: none
 
     &.visible
-        opacity: 1
+        opacity: .5
         pointer-events: all
 
     .progress-slider
