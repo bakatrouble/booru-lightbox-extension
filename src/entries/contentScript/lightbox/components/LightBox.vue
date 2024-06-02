@@ -454,7 +454,7 @@ const uploadGif = async (uploadLink: UploadLink) => {
 .label
     position: absolute
     bottom: 10px
-    right: 10px
+    left: 10px
 
     :global(a)
         color: white
