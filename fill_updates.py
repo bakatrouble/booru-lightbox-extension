@@ -44,7 +44,7 @@ def main():
             return
 
         # add current version to manifest
-        manifest['addons']['booru@bakatrouble.me']['updates'].append({
+        updates.append({
             'version': release_version,
             'update_link': release_url,
         })
