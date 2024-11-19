@@ -2,7 +2,7 @@ import { CollectImagesOptions, MediaListItem, MediaType } from '~/entries/conten
 
 const e621CollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
-        Array.from(document.querySelectorAll('.post-preview')).map(elem => {
+        Array.from(document.querySelectorAll('article.thumbnail')).map(elem => {
             const el = elem as HTMLElement;
             const fileUrl = el.getAttribute('data-file-url')!;
             const fileExt = el.getAttribute('data-file-ext');
