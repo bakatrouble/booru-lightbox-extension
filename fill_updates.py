@@ -13,7 +13,6 @@ from time import sleep
 def wait_for_release():
     while True:
         release_data = requests.get('https://api.github.com/repos/bakatrouble/image-galleries-extension/releases/latest').json()
-        pprint(release_data)
         if 'tag_name' in release_data:
             release_version = release_data['tag_name']
             release_url = release_data['assets'][0]['browser_download_url']
