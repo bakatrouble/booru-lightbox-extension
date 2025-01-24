@@ -12,8 +12,8 @@ const gelbooruCollectImages: CollectImagesOptions = {
                         const data = await axios.get(`https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&id=${pid}`);
                         return data.data.post[0].file_url;
                     },
-                    label: <a href={(el as HTMLAnchorElement).href} target="_blank">Show image</a>,
                     type: MediaType.Image,
+                    pageUrl: (el as HTMLAnchorElement).href,
                 },
             })
         }),

@@ -6,27 +6,28 @@ const e621CollectImages: CollectImagesOptions = {
             const el = elem as HTMLElement;
             const fileUrl = el.getAttribute('data-file-url')!;
             const fileExt = el.getAttribute('data-file-ext');
+            const pageUrl = el.querySelector('a')!.href;
             let item: MediaListItem["item"];
             switch (fileExt) {
             case 'swf':
                 item = {
                     src: el.querySelector('img')!.src,
-                    label: <a href={el.querySelector('a')!.href} target="_blank">Show flash</a>,
                     type: MediaType.Image,
+                    pageUrl,
                 };
                 break;
             case 'webm':
                 item = {
                     src: fileUrl,
-                    label: <a href={el.querySelector('a')!.href} target="_blank">Show video</a>,
                     type: MediaType.Video,
+                    pageUrl,
                 };
                 break;
             default:
                 item = {
                     src: fileUrl,
-                    label: <a href={el.querySelector('a')!.href} target="_blank">Show image</a>,
                     type: MediaType.Image,
+                    pageUrl,
                 };
                 break;
             }

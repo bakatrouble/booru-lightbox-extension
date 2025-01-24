@@ -4,6 +4,7 @@ import {
     mdiChevronRight,
     mdiClose,
     mdiMagnify,
+    mdiOpenInNew,
     mdiUpload,
 } from '@mdi/js';
 import Timeout from 'await-timeout';
@@ -118,6 +119,7 @@ const loadImage = async (idx: number) => {
             src: await resolveScalarOrFunction(item.src),
             label: await resolveScalarOrFunction(item.label),
             type: await resolveScalarOrFunction(item.type),
+            pageUrl: await resolveScalarOrFunction(item.pageUrl),
         },
     }
 }
@@ -383,6 +385,14 @@ const uploadGif = async (uploadLink: UploadLink) => {
                     </v-btn>
                 </template>
             </template>
+            <v-btn
+                v-if="currentMedia?.pageUrl"
+                variant="text"
+                density="comfortable"
+                :icon="mdiOpenInNew"
+                :href="currentMedia?.pageUrl"
+                target="_blank"
+            />
             <v-btn
                 variant="text"
                 density="comfortable"
