@@ -16,11 +16,13 @@ export interface MediaData {
     src: MediaUrl | MediaUrlCallback;
     label?: MediaLabel | MediaLabelCallback;
     type?: MediaTypeValue | MediaTypeCallback;
+    pageUrl?: MediaUrl | MediaUrlCallback;
 }
 export interface MediaDataScalar {
     src: MediaUrl;
     label?: MediaLabel;
     type?: MediaTypeValue;
+    pageUrl?: MediaUrl;
 }
 export type MediaDataCallback = () => Promise<MediaData>;
 

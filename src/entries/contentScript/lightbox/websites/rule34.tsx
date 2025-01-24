@@ -12,8 +12,8 @@ const rule34CollectImages: CollectImagesOptions = {
                 const isVideo = typeof (media as HTMLVideoElement).currentTime !== 'undefined';
                 return {
                     src: isVideo ? media.querySelector('source')!.src : media.src,
-                    label: <a href={(el as HTMLAnchorElement).href} target="_blank">Show image</a>,
                     type: isVideo ? MediaType.Video : MediaType.Image,
+                    pageUrl: (el as HTMLAnchorElement).href,
                 }
             },
         })),

@@ -11,8 +11,8 @@ const furaffinityCollectImages: CollectImagesOptions = {
                     const doc = parser.parseFromString((await axios.get((el as HTMLAnchorElement).href)).data as string, 'text/html');
                     return (doc.querySelector('#submissionImg') as HTMLImageElement).src;
                 },
-                label: <a href={(el as HTMLAnchorElement).href} target="_blank">Show image</a>,
                 type: MediaType.Image,
+                pageUrl: (el as HTMLAnchorElement).href,
             },
         })),
     domains: 'furaffinity.net',

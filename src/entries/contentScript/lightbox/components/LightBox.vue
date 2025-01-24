@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {
+    mdiCheck,
     mdiChevronLeft,
     mdiChevronRight,
     mdiClose,
+    mdiContentCopy,
     mdiMagnify,
+    mdiOpenInNew,
     mdiUpload,
 } from '@mdi/js';
 import Timeout from 'await-timeout';
@@ -63,6 +66,7 @@ const data = reactive({
     uploadLinks: [] as UploadLink[],
     pressedKeys: new Set<string>(),
     contentPosition: { x: 0, y: 0 } satisfies Vector2,
+    isCopied: false,
 });
 
 const prevIdx = computed(() => props.currentIdx - 1);
@@ -118,6 +122,7 @@ const loadImage = async (idx: number) => {
             src: await resolveScalarOrFunction(item.src),
             label: await resolveScalarOrFunction(item.label),
             type: await resolveScalarOrFunction(item.type),
+            pageUrl: await resolveScalarOrFunction(item.pageUrl),
         },
     }
 }
@@ -224,6 +229,16 @@ const close = () => {
     document.removeEventListener('wheel', cancelEvent);
     document.removeEventListener('gesturestart', cancelEvent);
     document.removeEventListener('gesturechange', cancelEvent);
+};
+
+const copyPageUrl = async () => {
+    if(currentMedia?.value?.pageUrl) {
+        await navigator.clipboard.writeText(currentMedia?.value?.pageUrl);
+
+        data.isCopied = true;
+        await Timeout.set(1000 * 2);
+        data.isCopied = false;
+    }
 };
 
 const locateFunc: (el: HTMLElement) => void = inject('locate') as any;
@@ -383,6 +398,22 @@ const uploadGif = async (uploadLink: UploadLink) => {
                     </v-btn>
                 </template>
             </template>
+            <v-btn
+                v-if="currentMedia?.pageUrl"
+                variant="text"
+                density="comfortable"
+                :color="data.isCopied ? 'success' : undefined"
+                :icon="data.isCopied ? mdiCheck : mdiContentCopy"
+                @click="data.isCopied ? undefined : copyPageUrl()"
+            />
+            <v-btn
+                v-if="currentMedia?.pageUrl"
+                variant="text"
+                density="comfortable"
+                :icon="mdiOpenInNew"
+                :href="currentMedia?.pageUrl"
+                target="_blank"
+            />
             <v-btn
                 variant="text"
                 density="comfortable"
