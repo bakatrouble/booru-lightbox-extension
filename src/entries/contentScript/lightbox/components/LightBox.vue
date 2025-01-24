@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
+    mdiCheck,
     mdiChevronLeft,
     mdiChevronRight,
     mdiClose,
+    mdiContentCopy,
     mdiMagnify,
     mdiOpenInNew,
     mdiUpload,
@@ -64,6 +66,7 @@ const data = reactive({
     uploadLinks: [] as UploadLink[],
     pressedKeys: new Set<string>(),
     contentPosition: { x: 0, y: 0 } satisfies Vector2,
+    isCopied: false,
 });
 
 const prevIdx = computed(() => props.currentIdx - 1);
@@ -228,6 +231,16 @@ const close = () => {
     document.removeEventListener('gesturechange', cancelEvent);
 };
 
+const copyPageUrl = async () => {
+    if(currentMedia?.value?.pageUrl) {
+        await navigator.clipboard.writeText(currentMedia?.value?.pageUrl);
+
+        data.isCopied = true;
+        await Timeout.set(1000 * 2);
+        data.isCopied = false;
+    }
+};
+
 const locateFunc: (el: HTMLElement) => void = inject('locate') as any;
 
 const locate = () => {
@@ -385,6 +398,14 @@ const uploadGif = async (uploadLink: UploadLink) => {
                     </v-btn>
                 </template>
             </template>
+            <v-btn
+                v-if="currentMedia?.pageUrl"
+                variant="text"
+                density="comfortable"
+                :color="data.isCopied ? 'success' : undefined"
+                :icon="data.isCopied ? mdiCheck : mdiContentCopy"
+                @click="data.isCopied ? undefined : copyPageUrl()"
+            />
             <v-btn
                 v-if="currentMedia?.pageUrl"
                 variant="text"
