@@ -381,7 +381,10 @@ const uploadGif = async (uploadLink: UploadLink) => {
             </div>
         </div>
         <v-sheet v-if="currentMedia?.label" class="pa-2 label" border rounded>
-            <component :is="currentMedia.label" />
+            <template v-if="typeof currentMedia.label === 'string'">
+                {{ currentMedia.label }}
+            </template>
+            <component :is="currentMedia.label" v-else />
         </v-sheet>
         <v-sheet class="pa-2 count-label" border rounded>
             {{ currentIdx + 1 }} / {{ data.loadedImages.length }}
