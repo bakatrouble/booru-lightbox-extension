@@ -1,6 +1,6 @@
 {
   "name": "image-galleries",
-  "version": "2.0.28",
+  "version": "2.0.29",
   "displayName": "Image Galleries",
   "author": "bakatrouble",
   "description": "Image galleries on some websites",
@@ -8,7 +8,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "watch": "vite build --watch --mode development --minify false",
     "dev": "vite",
-    "serve:firefox": "web-ext run --start-url \"about:debugging#/runtime/this-firefox\"  --source-dir ./dist/",
+    "serve:firefox": "web-ext run -f firefoxdeveloperedition --start-url \"about:debugging#/runtime/this-firefox\"  --source-dir ./dist/",
     "serve:chrome": "web-ext run -t chromium --start-url \"https://example.com\" --source-dir ./dist/",
     "sign": "pnpm build && dotenv cross-var web-ext sign",
     "lint": "eslint --cache . --fix"

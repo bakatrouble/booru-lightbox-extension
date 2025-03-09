@@ -41,14 +41,28 @@ const openLightbox = (idx: number) => {
     data.show = true;
 };
 
-onMounted(async () => {
-    data.imageList = await props.collectImagesModule!.callback();
+const scanImages = async () => {
+    const newImageList = await props.collectImagesModule!.callback();
+    if (newImageList.map(({ el }) => el.hasAttribute('data-lightbox-attached')).every(Boolean))
+        return;
+    data.imageList = newImageList;
     data.imageList.forEach(({ el }, i) => {
+        if (el.hasAttribute('data-lightbox-attached'))
+            return;
         el.addEventListener('click', (e) => {
             e.preventDefault();
             openLightbox(i);
         });
+        el.setAttribute('data-lightbox-attached', '');
     })
+    data.show = false;
+}
+
+onMounted(async () => {
+    await scanImages();
+    if (props.collectImagesModule!.rescanInterval) {
+        setInterval(scanImages, props.collectImagesModule.rescanInterval);
+    }
     const parsedQs = qs.parse(location.hash.slice(1));
     if (parsedQs.slide) {
         data.currentIdx = parseInt(parsedQs.slide as string);

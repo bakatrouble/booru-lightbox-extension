@@ -39,6 +39,7 @@ export interface LoadedMediaListItem {
 export interface CollectImagesOptions {
     callback: () => Promise<MediaListItem[]>;
     domains: string | RegExp | (string | RegExp)[];
+    rescanInterval?: number;
 }
 
 export interface Vector2 {
