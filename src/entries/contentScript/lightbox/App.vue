@@ -65,7 +65,12 @@ onMounted(async () => {
     }
     const parsedQs = qs.parse(location.hash.slice(1));
     if (parsedQs.slide) {
-        data.currentIdx = parseInt(parsedQs.slide as string);
+        if (parsedQs.slide === 'last') {
+            data.currentIdx = data.imageList.length - 1;
+            updateLocationHash();
+        } else {
+            data.currentIdx = parseInt(parsedQs.slide as string);
+        }
         data.show = true;
     }
     console.log('App mounted');

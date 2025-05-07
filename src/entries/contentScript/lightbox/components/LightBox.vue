@@ -226,7 +226,7 @@ const onKeyPress = async (e: KeyboardEvent) => {
             if (++data.prevPageCounter > 1) {
                 const newUrl = props.collectImagesModule.getPrevPageUrl?.();
                 if (newUrl)
-                    location.href = newUrl;
+                    location.href = `${newUrl}#slide=last`;
             }
         }
     } else if (e.key === 'ArrowRight') {
@@ -241,7 +241,7 @@ const onKeyPress = async (e: KeyboardEvent) => {
             if (++data.nextPageCounter > 1) {
                 const newUrl = props.collectImagesModule.getNextPageUrl?.();
                 if (newUrl)
-                    location.href = newUrl;
+                    location.href = `${newUrl}#slide=0`;
             }
         }
     } else {
