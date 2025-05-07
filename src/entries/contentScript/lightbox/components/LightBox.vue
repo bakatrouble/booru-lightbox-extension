@@ -12,7 +12,7 @@ import {
 import Timeout from 'await-timeout';
 import { PortalTarget } from 'portal-vue';
 import {
-    computed,
+    computed, ComputedRef,
     inject,
     nextTick,
     onMounted,
@@ -32,9 +32,11 @@ import {
     MediaType,
     NotificationLevel,
     Vector2,
+    CollectImagesOptions,
 } from '~/entries/contentScript/types';
 import { getImageBase64 } from '~/entries/shared/getImageBase64';
 import { FullGestureState } from '@vueuse/gesture';
+import { collectImagesModules } from '~/entries/contentScript/lightbox/websites';
 
 const props = defineProps({
     show: {
@@ -47,6 +49,10 @@ const props = defineProps({
     },
     imageList: {
         type: Object as PropType<MediaListItem[]>,
+        required: true,
+    },
+    collectImagesModule: {
+        type: Object as PropType<CollectImagesOptions>,
         required: true,
     },
 });
@@ -67,16 +73,33 @@ const data = reactive({
     pressedKeys: new Set<string>(),
     contentPosition: { x: 0, y: 0 } satisfies Vector2,
     isCopied: false,
+
+    prevPageCounter: 0,
+    nextPageCounter: 0,
 });
 
 const prevIdx = computed(() => props.currentIdx - 1);
 const nextIdx = computed(() => props.currentIdx + 1);
+const isFirstIdx = computed(() => props.currentIdx === 0);
+const isLastIdx = computed(() => props.currentIdx === (props.imageList.length - 1));
 const currentMedia = computed(() => {
     if (data.loadedImages[props.currentIdx])
         return (data.loadedImages[props.currentIdx] as LoadedMediaListItem).item;
     return undefined;
 });
 const isHorizontalSlide = computed(() => Math.abs(data.draggingOffset.x * 2) > Math.abs(data.draggingOffset.y));
+
+watch([isFirstIdx, data.prevPageCounter], () => {
+    if (!isFirstIdx.value && data.prevPageCounter > 0) {
+        data.prevPageCounter = 0;
+    }
+});
+
+watch([isLastIdx, data.nextPageCounter], () => {
+    if (!isLastIdx.value && data.nextPageCounter > 0) {
+        data.nextPageCounter = 0;
+    }
+})
 
 const cancelEvent = (e: Event) => e.preventDefault();
 
@@ -93,10 +116,10 @@ const dragHandler = ({ movement: [x, y], dragging, swipe: [swipeX, swipeY], even
         }
     } else if (!dragging && data.dragging) {
         if (swipeX > 0) {
-            if (props.currentIdx > 0)
+            if (!isFirstIdx.value)
                 emit('slideDelta', -1);
         } else if (swipeX < 0) {
-            if (props.currentIdx < props.imageList!.length - 1)
+            if (!isLastIdx.value)
                 emit('slideDelta', +1);
         } else if (swipeY !== 0) {
             close();
@@ -192,22 +215,34 @@ const onKeyPress = async (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
         close();
     } else if (e.key === 'ArrowLeft') {
-        if (props.currentIdx > 0) {
+        if (!isFirstIdx.value) {
             data.noAnimations = true;
             await nextTick();
             emit('slideDelta', -1);
             await nextTick();
             await Timeout.set(100);
             data.noAnimations = false;
+        } else {
+            if (++data.prevPageCounter > 1) {
+                const newUrl = props.collectImagesModule.getPrevPageUrl?.();
+                if (newUrl)
+                    location.href = newUrl;
+            }
         }
     } else if (e.key === 'ArrowRight') {
-        if (props.currentIdx < props.imageList!.length - 1) {
+        if (!isLastIdx.value) {
             data.noAnimations = true;
             await nextTick();
             emit('slideDelta', +1);
             await nextTick();
             await Timeout.set(100);
             data.noAnimations = false;
+        } else {
+            if (++data.nextPageCounter > 1) {
+                const newUrl = props.collectImagesModule.getNextPageUrl?.();
+                if (newUrl)
+                    location.href = newUrl;
+            }
         }
     } else {
         return;

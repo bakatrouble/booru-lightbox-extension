@@ -17,6 +17,7 @@ const e621CollectImages: CollectImagesOptions = {
                 };
                 break;
             case 'webm':
+            case 'mp4':
                 item = {
                     src: fileUrl,
                     type: MediaType.Video,
@@ -37,5 +38,7 @@ const e621CollectImages: CollectImagesOptions = {
             })
         }),
     domains: ['e621.net', 'e926.net'],
+    getPrevPageUrl: () => document.querySelector('#paginator-prev')?.getAttribute('href') ?? undefined,
+    getNextPageUrl: () => document.querySelector('#paginator-next')?.getAttribute('href') ?? undefined,
 };
 export default e621CollectImages;

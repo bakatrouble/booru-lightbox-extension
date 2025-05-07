@@ -40,6 +40,8 @@ export interface CollectImagesOptions {
     callback: () => Promise<MediaListItem[]>;
     domains: string | RegExp | (string | RegExp)[];
     rescanInterval?: number;
+    getPrevPageUrl?: () => string | undefined;
+    getNextPageUrl?: () => string | undefined;
 }
 
 export interface Vector2 {

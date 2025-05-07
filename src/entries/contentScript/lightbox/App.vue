@@ -86,6 +86,7 @@ provide('locate', (el: HTMLElement) => locate.value?.locate(el))
                 :show="data.show"
                 :image-list="data.imageList as any"
                 :current-idx="data.currentIdx"
+                :collect-images-module="props.collectImagesModule"
                 @slide="data.currentIdx = $event"
                 @slide-delta="data.currentIdx += $event"
                 @close="data.show = false"
