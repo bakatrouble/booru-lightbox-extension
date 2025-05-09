@@ -6,6 +6,7 @@ import inkbunnyCollectImages from './inkbunny';
 import rule34CollectImages from './rule34';
 import localCollectImages from './local';
 import { sankakuComplexCollectImages } from '~/entries/contentScript/lightbox/websites/sankakuComplex';
+import { realBooruCollectImages } from '~/entries/contentScript/lightbox/websites/realbooru';
 
 export const collectImagesModules = [
     e621CollectImages,
@@ -15,6 +16,7 @@ export const collectImagesModules = [
     rule34CollectImages,
     localCollectImages,
     sankakuComplexCollectImages,
+    realBooruCollectImages,
 ];
 
 export const getCollectImagesModule = (location: Location) =>
