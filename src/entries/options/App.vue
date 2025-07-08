@@ -8,16 +8,17 @@ import HotkeyButton from '~/entries/shared/HotkeyButton.vue';
 
 const data = reactive({
     uploadLinks: [] as UploadLink[],
-    // zoomRatio: .25,
+    gelbooruApiKey: '',
     savedNotification: false,
 });
 
 onMounted(async () => {
     const savedData = await browser.storage.sync.get([
         'uploadLinks',
+        'gelbooruApiKey',
     ]);
-    data.uploadLinks = savedData.uploadLinks || [] as UploadLink[];
-    console.log(_.cloneDeep(data.uploadLinks));
+    data.uploadLinks = savedData.uploadLinks ?? [] as UploadLink[];
+    data.gelbooruApiKey = savedData.gelbooruApiKey ?? '';
 
     let ulUpdated = false;
     data.uploadLinks.forEach(ul => {
@@ -36,6 +37,7 @@ const getUuid = () => uuidv4();
 const save = async () => {
     await browser.storage.sync.set({
         uploadLinks: _.cloneDeep(data.uploadLinks),
+        gelbooruApiKey: data.gelbooruApiKey,
     });
     data.savedNotification = true;
     console.log(_.cloneDeep(data.uploadLinks));
@@ -116,6 +118,14 @@ const save = async () => {
                     label="Zoom ratio"
                 />
             </v-sheet>-->
+            <v-sheet rounded class="pa-2">
+                <h2 class="text-h6 mb-4">Gelbooru API Key</h2>
+                <v-text-field
+                    v-model="data.gelbooruApiKey"
+                    variant="solo-filled"
+                    label="Gelbooru API Key"
+                />
+            </v-sheet>
             <v-sheet rounded class="align-self-end mt-2 pa-2">
                 <v-btn
                     :prepend-icon="mdiContentSave"
