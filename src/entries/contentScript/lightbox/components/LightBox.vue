@@ -182,6 +182,11 @@ onMounted(async () => {
     document.addEventListener('keydown', onKeyPress, { capture: true });
     document.addEventListener('keyup', onKeyRelease, { capture: true });
     data.uploadLinks = (await browser.storage.sync.get('uploadLinks')).uploadLinks || [];
+
+    const port = browser.runtime.connect('uploader@bakatrouble.me');
+    port.postMessage({
+        haha: 'message from lightbox',
+    });
 });
 
 onUnmounted(() => {
@@ -295,21 +300,29 @@ const upload = async (uploadLink: UploadLink) => {
 
     const el = $el.value!.querySelector(`.slide-${props.currentIdx} .content`)!.querySelector('img') as HTMLImageElement;
     const dataUrl = await getImageBase64(el);
-    const fetchParams = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+    // const fetchParams = {
+    //     headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json',
+    //     },
+    //     method: "POST",
+    //     body: JSON.stringify({
+    //         "method": "post_photo",
+    //         "params": [dataUrl, true],
+    //         "jsonrpc": "2.0",
+    //         "id": 0,
+    //     }),
+    // };
+    // const r = await fetch(uploadLink.url, fetchParams);
+    // const response = await r.json();
+    const response = await browser.runtime.sendMessage(
+        'uploader@bakatrouble.me',
+        {
+            endpoint: uploadLink.url,
+            type: 'photoBase64',
+            data: dataUrl,
         },
-        method: "POST",
-        body: JSON.stringify({
-            "method": "post_photo",
-            "params": [dataUrl, true],
-            "jsonrpc": "2.0",
-            "id": 0,
-        }),
-    };
-    const r = await fetch(uploadLink.url, fetchParams);
-    const response = await r.json();
+    );
     if (response.result === true) {
         window.galleryExtension?.updateNotification({
             id: notificationId!,
@@ -325,7 +338,7 @@ const upload = async (uploadLink: UploadLink) => {
             message: 'This image was sent before',
         });
     } else {
-        console.error(uploadLink.url, fetchParams, response);
+        console.error(uploadLink.url, response);
         window.galleryExtension?.updateNotification({
             id: notificationId!,
             level: NotificationLevel.Error,
@@ -342,21 +355,29 @@ const uploadGif = async (uploadLink: UploadLink) => {
         message: 'Uploading GIF...',
     });
 
-    const fetchParams = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+    // const fetchParams = {
+    //     headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json',
+    //     },
+    //     method: "POST",
+    //     body: JSON.stringify({
+    //         "method": "post_gif",
+    //         "params": [currentMedia.value!.src],
+    //         "jsonrpc": "2.0",
+    //         "id": 0,
+    //     }),
+    // };
+    // const r = await fetch(uploadLink.url, fetchParams);
+    // const response = await r.json();
+    const response = await browser.runtime.sendMessage(
+        'uploader@bakatrouble.me',
+        {
+            endpoint: uploadLink.url,
+            type: 'gif',
+            url: currentMedia.value!.src,
         },
-        method: "POST",
-        body: JSON.stringify({
-            "method": "post_gif",
-            "params": [currentMedia.value!.src],
-            "jsonrpc": "2.0",
-            "id": 0,
-        }),
-    };
-    const r = await fetch(uploadLink.url, fetchParams);
-    const response = await r.json();
+    );
     if (response.result === true) {
         window.galleryExtension?.updateNotification({
             id: notificationId!,
@@ -365,7 +386,7 @@ const uploadGif = async (uploadLink: UploadLink) => {
             message: 'GIF was sent successfully',
         });
     } else {
-        console.error(uploadLink.url, fetchParams, response);
+        console.error(uploadLink.url, response);
         window.galleryExtension?.updateNotification({
             id: notificationId!,
             level: NotificationLevel.Error,
