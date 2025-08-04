@@ -14,7 +14,7 @@ export default defineConfig({
     },
     vite: (): WxtViteConfig => ({
         build: {
-            sourcemap: 'inline',
+            sourcemap: true,
             minify: false,
             cssMinify: false,
         },
