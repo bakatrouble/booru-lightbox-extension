@@ -31,6 +31,7 @@
     "typescript": "^5.0.4",
     "vite-plugin-vuetify": "^2.1.2",
     "vite-tsconfig-paths": "^5.1.4",
+    "web-ext": "^8.9.0",
     "wxt": "^0.20.7"
   },
   "dependencies": {
