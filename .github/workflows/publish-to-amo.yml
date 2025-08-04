@@ -21,8 +21,10 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build and sign the extension
-        run: pnpm run sign
+      - name: Build the extension
+        run: pnpm build:firefox
+      - name: Sign the extension
+        run: pnpm sign
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}

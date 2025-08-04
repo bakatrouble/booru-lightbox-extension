@@ -12,7 +12,7 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "postinstall": "wxt prepare",
-    "sign": "pnpm build:firefox && dotenv cross-var web-ext sign"
+    "sign": "dotenv cross-var web-ext sign"
   },
   "license": "MIT",
   "devDependencies": {
