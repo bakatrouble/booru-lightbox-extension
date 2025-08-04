@@ -1,5 +1,4 @@
 import { defineConfig, WxtViteConfig } from 'wxt';
-import vueJsxPlugin from '@vitejs/plugin-vue-jsx';
 import vuetify from 'vite-plugin-vuetify';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -20,7 +19,6 @@ export default defineConfig({
             cssMinify: false,
         },
         plugins: [
-            vueJsxPlugin(),
             vuetify({
                 autoImport: true,
                 styles: 'sass',
@@ -42,6 +40,10 @@ export default defineConfig({
             'activeTab',
             'storage',
             'menus',
+            'tabs',
+            'webRequest',
+            'webRequestBlocking',
+            '<all_urls>',
         ],
     },
 });

@@ -63,27 +63,4 @@ declare global {
         x: number,
         y: number,
     }
-
-    interface NotificationOptions {
-        level: NotificationLevel;
-        title?: string;
-        message: string;
-    }
-
-    interface UpdateNotificationOptions extends NotificationOptions {
-        id: string;
-    }
-
-    interface NotificationEntry extends NotificationOptions {
-        visible: boolean;
-        id: string;
-    }
-
-    type RuntimeMessage = {
-        type: 'notification',
-        options: NotificationOptions,
-    } | {
-        type: 'update-notification',
-        options: UpdateNotificationOptions,
-    };
 }

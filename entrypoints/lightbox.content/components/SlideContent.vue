@@ -244,6 +244,7 @@ const onVideoLoad = (width: number, height: number) => {
                 :src="media.item.src"
                 draggable="false"
                 unselectable="on"
+                crossorigin=""
                 :style="{
                     width: `${mediaSize.x * currentRatio}px`,
                     height: `${mediaSize.y * currentRatio}px`,

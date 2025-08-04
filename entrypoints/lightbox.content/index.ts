@@ -25,7 +25,6 @@ export default defineContentScript({
     cssInjectionMode: 'ui',
 
     main: async (ctx) => {
-
         const collectImagesModule = getCollectImagesModule(window.location);
         if (collectImagesModule) {
             const ui = await createShadowRootUi(ctx, {
