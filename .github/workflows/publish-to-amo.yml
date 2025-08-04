@@ -24,7 +24,7 @@ jobs:
       - name: Build the extension
         run: pnpm build:firefox
       - name: Sign the extension
-        run: pnpm sign
+        run: pnpm web-ext sign
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
