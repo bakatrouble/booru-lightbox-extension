@@ -1,16 +1,25 @@
-import { defineConfig, WxtViteConfig } from 'wxt';
-import vuetify from 'vite-plugin-vuetify';
+import tailwindcss from '@tailwindcss/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig, type WxtViteConfig } from 'wxt';
+
+export const updateManifestUrl =
+    'https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest/manifest.json';
+export const extensionSlug = 'booru@bakatrouble.me';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
-    modules: [
-        '@wxt-dev/module-vue',
-    ],
+    modules: ['@wxt-dev/module-vue'],
     zip: {
-        excludeSources: [
-            'web-ext-artifacts/**/*',
-        ],
+        excludeSources: ['web-ext-artifacts/**/*'],
+    },
+    vue: {
+        vite: {
+            template: {
+                compilerOptions: {
+                    // isCustomElement: (tag) => tag === 'mdicon',
+                },
+            },
+        },
     },
     vite: (): WxtViteConfig => ({
         build: {
@@ -18,22 +27,13 @@ export default defineConfig({
             minify: false,
             cssMinify: false,
         },
-        plugins: [
-            vuetify({
-                autoImport: true,
-                styles: 'sass',
-            }),
-            tsconfigPaths(),
-        ],
-        ssr: {
-            noExternal: ['vuetify']
-        }
+        plugins: [tailwindcss(), tsconfigPaths()],
     }),
     manifest: {
         browser_specific_settings: {
             gecko: {
-                id: "booru@bakatrouble.me",
-                update_url: 'https://booru.drop.bakatrouble.me/manifest.json',
+                id: extensionSlug,
+                update_url: updateManifestUrl,
             },
         },
         permissions: [
@@ -44,6 +44,12 @@ export default defineConfig({
             'webRequest',
             'webRequestBlocking',
             '<all_urls>',
+        ],
+        web_accessible_resources: [
+            {
+                resources: ['iframe.html'],
+                matches: ['*://*/*'],
+            },
         ],
     },
 });

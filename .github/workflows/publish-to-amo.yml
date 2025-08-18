@@ -6,6 +6,7 @@ on:
 
 jobs:
   publish-to-amo:
+    if: false
     name: Build and publish the extension
     runs-on: ubuntu-latest
     permissions:

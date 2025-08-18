@@ -1,15 +1,25 @@
 import { VNode } from 'vue';
+import { MediaType } from '@/entrypoints/lightbox.content';
 
 declare global {
     interface Window {
         galleryExtension?: {
-            pushNotification: (options: { level: NotificationLevel; title: string; message: string }) => string;
-            updateNotification: (options: { id: string; level: NotificationLevel; title: string; message: string }) => void;
-        }
+            pushNotification: (options: {
+                level: NotificationLevel;
+                title: string;
+                message: string;
+            }) => string;
+            updateNotification: (options: {
+                id: string;
+                level: NotificationLevel;
+                title: string;
+                message: string;
+            }) => void;
+        };
     }
 
     interface UploadLink {
-        id: string,
+        id: string;
         name: string;
         shortName: string;
         url: string;
@@ -42,13 +52,13 @@ declare global {
     type MediaDataCallback = () => Promise<MediaData>;
 
     interface MediaListItem {
-        el: HTMLElement,
+        el: HTMLElement;
         item: MediaData | MediaDataCallback;
     }
 
     interface LoadedMediaListItem {
-        el: HTMLElement,
-        item: MediaDataScalar,
+        el: HTMLElement;
+        item: MediaDataScalar;
     }
 
     interface CollectImagesOptions {
@@ -60,7 +70,7 @@ declare global {
     }
 
     interface Vector2 {
-        x: number,
-        y: number,
+        x: number;
+        y: number;
     }
 }

@@ -1,56 +1,89 @@
 import { App, createApp } from 'vue';
-import { createVuetify } from 'vuetify';
 import { getCollectImagesModule } from './websites';
-import Primary from "./App.vue";
-import 'vuetify/lib/styles/main.sass';
-import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import Primary from './App.vue';
 import PortalVue from 'portal-vue';
 import { GesturePlugin } from '@vueuse/gesture';
-
-export let app: App;
+import mdiVue from 'mdi-vue/v3';
+import {
+    mdiContentCopy,
+    mdiCheck,
+    mdiOpenInNew,
+    mdiUpload,
+    mdiMagnify,
+    mdiClose,
+    mdiChevronRight,
+    mdiChevronLeft,
+    mdiVolumeHigh,
+    mdiVolumeOff,
+    mdiPlay,
+    mdiPause,
+    mdiFullscreen,
+} from '@mdi/js';
+import '../../assets/tailwind.css';
 
 export enum MediaType {
     Image = 'image',
     Video = 'video',
 }
 
-export enum NotificationLevel {
-    Success = 'green',
-    Loading = 'grey',
-    Error = 'red',
-}
+export const mountApp = (
+    mod: CollectImagesOptions,
+    container: HTMLElement | string,
+) => {
+    const app = createApp(Primary, { mod })
+        .use(PortalVue)
+        .use(GesturePlugin)
+        .use(mdiVue, {
+            icons: {
+                mdiContentCopy,
+                mdiCheck,
+                mdiOpenInNew,
+                mdiUpload,
+                mdiMagnify,
+                mdiClose,
+                mdiChevronLeft,
+                mdiChevronRight,
+                mdiFullscreen,
+                mdiPause,
+                mdiPlay,
+                mdiVolumeOff,
+                mdiVolumeHigh,
+            },
+        });
+    app.mount(container);
+    return app;
+};
 
 export default defineContentScript({
     matches: ['*://*/*'],
     cssInjectionMode: 'ui',
 
     main: async (ctx) => {
-        const collectImagesModule = getCollectImagesModule(window.location);
-        if (collectImagesModule) {
+        const existingUi = document.querySelector('booru-lightbox-ui');
+        if (existingUi) {
+            existingUi.remove();
+            document
+                .querySelectorAll('[data-lightbox-attached]')
+                .forEach((el) => {
+                    el.removeAttribute('data-lightbox-attached');
+                });
+        }
+
+        const mod = getCollectImagesModule(window.location);
+        if (mod) {
             const ui = await createShadowRootUi(ctx, {
                 name: 'booru-lightbox-ui',
                 position: 'inline',
                 anchor: 'body',
-                async onMount(container) {
-                    const vuetify = createVuetify({
-                        icons: {
-                            defaultSet: 'mdi',
-                            aliases,
-                            sets: { mdi },
-                        },
-                        theme: {
-                            defaultTheme: 'dark',
-                        },
-                    });
-                    app = createApp(Primary, { collectImagesModule })
-                        .use(vuetify)
-                        .use(PortalVue)
-                        .use(GesturePlugin);
-                    app.mount(container);
-                }
+                css: '@layer theme, base, properties, components, utilities;',
+                onMount(container) {
+                    return mountApp(mod, container);
+                },
+                onRemove: (app) => {
+                    app?.unmount();
+                },
             });
-
             ui.mount();
         }
     },
-})
+});

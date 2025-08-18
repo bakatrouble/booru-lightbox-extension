@@ -1,111 +1,95 @@
 <script setup lang="ts">
 import { onMounted, provide, reactive, ref, watch } from 'vue';
-import type { PropType } from 'vue';
 import qs from 'qs';
-import Fade from './components/Fade.vue';
 import LightBox from './components/LightBox.vue';
 import Locate from './components/Locate.vue';
-import ScrollLock from './components/ScrollLock.vue';
+import ScrollLock from './atoms/ScrollLock.vue';
 
-const props = defineProps({
-    collectImagesModule: {
-        type: Object as PropType<CollectImagesOptions>,
-        required: true,
-    },
-});
+const { mod } = defineProps<{
+    mod: CollectImagesOptions;
+}>();
 
-const data = reactive({
-    imageList: [] as MediaListItem[],
-    currentIdx: 0,
-    show: false,
-});
+const imageList = ref<MediaListItem[]>([]);
+const currentIdx = ref(0);
+const show = ref(false);
 
 const updateLocationHash = () => {
     const url = new URL(location.href);
     const parsedQs = qs.parse(location.hash.slice(1));
-    if (!data.show) {
+    if (!show.value) {
         parsedQs.slide = undefined;
     } else {
-        parsedQs.slide = data.currentIdx.toString();
+        parsedQs.slide = currentIdx.value.toString();
     }
     const stringifiedQs = qs.stringify(parsedQs);
     url.hash = stringifiedQs === '' ? '' : `#${stringifiedQs}`;
     history.replaceState('', '', url);
-}
+};
 
-watch([() => data.currentIdx, () => data.show], updateLocationHash);
+watch([currentIdx, show], updateLocationHash);
 
 const openLightbox = (idx: number) => {
-    data.currentIdx = idx;
-    data.show = true;
+    currentIdx.value = idx;
+    show.value = true;
 };
 
 const scanImages = async () => {
-    const newImageList = await props.collectImagesModule!.callback();
-    if (newImageList.map(({ el }) => el.hasAttribute('data-lightbox-attached')).every(Boolean))
+    const newImageList = await mod.callback();
+    if (
+        newImageList
+            .map(({ el }) => el.hasAttribute('data-lightbox-attached'))
+            .every(Boolean)
+    )
         return;
-    data.imageList = newImageList;
-    data.imageList.forEach(({ el }, i) => {
-        if (el.hasAttribute('data-lightbox-attached'))
-            return;
+    imageList.value = newImageList;
+    imageList.value.forEach(({ el }, i) => {
+        if (el.hasAttribute('data-lightbox-attached')) return;
         el.addEventListener('click', (e) => {
             e.preventDefault();
             openLightbox(i);
         });
         el.setAttribute('data-lightbox-attached', '');
-    })
-    data.show = false;
-}
+    });
+    show.value = false;
+};
 
 onMounted(async () => {
     await scanImages();
-    if (props.collectImagesModule!.rescanInterval) {
-        setInterval(scanImages, props.collectImagesModule.rescanInterval);
+    if (mod.rescanInterval) {
+        setInterval(scanImages, mod.rescanInterval);
     }
     const parsedQs = qs.parse(location.hash.slice(1));
     if (parsedQs.slide) {
         if (parsedQs.slide === 'last') {
-            data.currentIdx = data.imageList.length - 1;
+            currentIdx.value = imageList.value.length - 1;
             updateLocationHash();
         } else {
-            data.currentIdx = parseInt(parsedQs.slide as string);
+            currentIdx.value = parseInt(parsedQs.slide as string);
         }
-        data.show = true;
+        show.value = true;
     }
-    console.log('App mounted');
 });
 
 const locate = ref<InstanceType<typeof Locate>>();
 
 // @ts-ignore
-provide('locate', (el: HTMLElement) => locate.value?.locate(el))
+provide('locate', (el: HTMLElement) => locate.value?.locate(el));
 </script>
 
 <template>
-    <v-theme-provider>
-        <v-locale-provider ltr>
-            <scroll-lock v-if="data.show" />
-            <fade :show="data.show" />
-            <light-box
-                :show="data.show"
-                :image-list="data.imageList as any"
-                :current-idx="data.currentIdx"
-                :collect-images-module="props.collectImagesModule"
-                @slide="data.currentIdx = $event"
-                @slide-delta="data.currentIdx += $event"
-                @close="data.show = false"
-            />
-            <locate ref="locate" />
-        </v-locale-provider>
-    </v-theme-provider>
+    <scroll-lock v-if="show" />
+    <light-box
+        :show="show"
+        :image-list="imageList as any"
+        :current-idx="currentIdx"
+        :collect-images-module="mod"
+        @slide="currentIdx = $event"
+        @slide-delta="currentIdx += $event"
+        @close="show = false"
+    />
+    <locate ref="locate" />
 </template>
 
-<style lang="sass">
-\:host
-    --v-theme-overlay-multiplier: 1
-    --v-scrollbar-offset: 0px
-
-.v-slider
-    .v-input__details
-        display: none
+<style lang="css">
+@layer theme, base, components, utitlities;
 </style>

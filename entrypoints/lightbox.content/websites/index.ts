@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import e621CollectImages from './e621';
 import furaffinityCollectImages from './furaffinity';
 import gelbooruCollectImages from './gelbooru';
@@ -19,14 +18,20 @@ export const collectImagesModules = [
     realBooruCollectImages,
 ];
 
-export const getCollectImagesModule = (location: Location) =>
-    _.find(collectImagesModules, (module) => {
-        let domains = module.domains;
+export const getCollectImagesModule = (
+    location: Location,
+): CollectImagesOptions | undefined => {
+    return collectImagesModules.find((m) => {
+        let domains = m.domains;
         if (!(domains instanceof Array)) {
             domains = [domains];
         }
         for (const domain of domains) {
-            if ((domain as RegExp).test?.(location.host) || location.host.includes(domain as string))
+            if (
+                (domain as RegExp).test?.(location.host) ||
+                location.host.includes(domain as string)
+            )
                 return true;
         }
     });
+};

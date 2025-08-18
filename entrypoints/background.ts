@@ -3,8 +3,11 @@ export default defineBackground({
         browser.webRequest.onHeadersReceived.addListener(
             ({ responseHeaders, url }) => {
                 console.log('Adding CSP header to', url, responseHeaders);
+                responseHeaders = responseHeaders?.filter(
+                    (h) => h.name.toLowerCase() !== 'content-security-policy',
+                );
                 responseHeaders?.push({
-                    name: 'Content-Security-Policy',
+                    name: 'content-security-policy',
                     value: '*',
                 });
                 return { responseHeaders };
@@ -16,10 +19,7 @@ export default defineBackground({
                     '*://*.gelbooru.com/*',
                 ],
             },
-            [
-                'blocking',
-                'responseHeaders',
-            ],
-        )
-    }
+            ['blocking', 'responseHeaders'],
+        );
+    },
 });

@@ -1,0 +1,45 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+    "formatter": {
+        "indentStyle": "space", // default is `tab`
+        "lineWidth": 80, // default is `80`
+        "indentWidth": 4 // default is `2`
+    },
+    "linter": {
+        "rules": {
+            "suspicious": {
+                "noExplicitAny": "off",
+                "noUnknownAtRules": "off"
+            },
+            "complexity": {
+                "noStaticOnlyClass": "off"
+            },
+            "style": {
+                "noNonNullAssertion": "off"
+            }
+        }
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single", // default is `double`
+            "lineWidth": 80 // override `formatter.lineWidth`
+        }
+    },
+    "overrides": [
+        {
+            "includes": ["**/*.vue"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "useConst": "off",
+                        "useImportType": "off"
+                    },
+                    "correctness": {
+                        "noUnusedVariables": "off",
+                        "noUnusedImports": "off"
+                    }
+                }
+            }
+        }
+    ]
+}

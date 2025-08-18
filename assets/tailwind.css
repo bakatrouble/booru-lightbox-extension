@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+    --base-z-index: 10000;
+    --default-transition-duration: 0.3s;
+    --color-background: var(--color-gray-900);
+    --color-text: var(--color-white);
+    --color-border: var(--color-gray-600);
+    --color-link-hover: var(--color-blue-300);
+    --color-button-hover: var(--color-blue-800);
+    --color-button-active: var(--color-blue-900);
+    --radius-default: var(--radius-lg);
+}
+
+@utility blur-out {
+    @apply transition-[opacity,filter]
+           opacity-30
+           blur-xs;
+
+    &:hover,
+    &[data-blur="false"] {
+        @apply opacity-100 blur-none;
+    }
+}
+
+@utility transition-opacity-interactive {
+    @apply transition-opacity opacity-0 pointer-events-none;
+
+    &[data-visible="true"] {
+        @apply opacity-100 pointer-events-auto;
+    }
+}

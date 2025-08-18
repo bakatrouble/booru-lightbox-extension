@@ -1,49 +1,27 @@
 <script setup lang="ts">
 import Timeout from 'await-timeout';
-import { onMounted, reactive } from 'vue';
+import { useAnimate, useElementBounding, useWindowScroll } from '@vueuse/core';
 
-const w = window;
-
-const data = reactive({
-    locateEl: undefined as HTMLElement | undefined,
+const locateEl = ref<HTMLElement>();
+const locateElRect = useElementBounding(locateEl);
+const scroll = useWindowScroll();
+const box = ref<HTMLElement>();
+const animationDuration = 500;
+useAnimate(box, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], {
+    duration: animationDuration,
+    iterations: Infinity,
 });
 
-onMounted(() => {
-    document.querySelector('.lightbox-locate-wrapper')?.remove();
-    document.querySelector('.lightbox-locate-wrapper')?.remove();
-
-    const styleEl = document.createElement('style');
-    styleEl.setAttribute('type', 'text/css');
-    styleEl.classList.add('lightbox-locate-style');
-    styleEl.innerHTML = `
-            .lightbox-locate-wrapper {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-            }
-            .lightbox-locate-rect {
-                position: absolute;
-                border: 5px solid #ff0000;
-                pointer-events: none;
-                animation: lightbox-locate-blink .5s ease infinite;
-            }
-
-            @keyframes lightbox-locate-blink {
-                0% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0;
-                }
-                100% {
-                    opacity: 1;
-                }
-            }
-        `;
-    document.head.appendChild(styleEl);
+const locateBoxRect = computed(() => {
+    if (!locateEl.value && !locateElRect.left.value)
+        return { left: 0, top: 0, width: 0, height: 0 };
+    const rect = {
+        left: `${locateElRect.left.value + scroll.x.value - 5}px`,
+        top: `${locateElRect.top.value + scroll.y.value - 5}px`,
+        width: `${locateElRect.width.value + 10}px`,
+        height: `${locateElRect.height.value + 10}px`,
+    };
+    return rect;
 });
 
 const locate = async (el: HTMLElement) => {
@@ -52,10 +30,10 @@ const locate = async (el: HTMLElement) => {
         block: 'center',
         inline: 'center',
     });
-    data.locateEl = el;
-    await Timeout.set(5000);
-    data.locateEl = undefined;
-}
+    locateEl.value = el;
+    await Timeout.set(5000 - animationDuration / 2); // should stop mid-animation at opacity 0
+    locateEl.value = undefined;
+};
 
 defineExpose({
     locate,
@@ -63,18 +41,26 @@ defineExpose({
 </script>
 
 <template>
-    <Teleport to="body" :disabled="!data.locateEl">
-        <div class="lightbox-locate-wrapper">
+    <teleport to="body" :disabled="!locateEl">
+        <div
+            style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none; 
+            "
+        >
             <div
-                v-if="data.locateEl"
-                class="lightbox-locate-rect"
-                :style="{
-                    left: `${data.locateEl.getBoundingClientRect().left + w.scrollX - 5}px`,
-                    top: `${data.locateEl.getBoundingClientRect().top + w.scrollY - 5}px`,
-                    width: `${data.locateEl.clientWidth}px`,
-                    height: `${data.locateEl.clientHeight}px`,
-                }"
+                v-if="locateEl"
+                ref="box"
+                :style="[
+                    console.log(locateBoxRect),
+                    locateBoxRect,
+                    'border-radius: 5px; position: absolute; background: #f006; pointer-events: none',
+                ]"
             />
         </div>
-    </Teleport>
+    </teleport>
 </template>
