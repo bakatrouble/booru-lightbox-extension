@@ -30,6 +30,13 @@ const delayedPanning = useDebounce(panning, 100);
 const image = ref<HTMLImageElement>();
 const video = ref<typeof VideoPlayer>();
 
+const unloadedPosition = {
+    left: '50%',
+    top: '50%',
+    width: 0,
+    height: 0,
+};
+
 watch(loaded, (loaded) => {
     if (loaded) {
         position.value = {
@@ -315,6 +322,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             <video-player
                 v-else-if="media.item.type === MediaType.Video"
                 ref="video"
+                class="video"
                 :panning="panning"
                 :showing="current"
                 :style="{
@@ -336,31 +344,46 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
 
 @layer components {
     .content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        transition: opacity var(--default-transition-duration) var(--default-transition-timing-function);
-        cursor: grab;
-        opacity: 0;
+        @apply
+            absolute
+            top-0
+            left-0
+            right-0
+            bottom-0
+            transition-all
+            cursor-grab
+            opacity-0;
 
         &[data-panning="true"] {
-            cursor: grabbing;
+            @apply
+                cursor-grabbing;
 
             .image, .video {
-                transition: none;
+                @apply
+                    transition-none;
             }
         }
 
         &[data-panning-delayed="true"] {
             .video {
-                pointer-events: none;
+                @apply
+                    pointer-events-none;
             }
         }
 
         &[data-loaded="true"] {
-            opacity: 1;
+            @apply
+                opacity-100;
+        }
+
+        &[data-loaded="false"] {
+            .image, .video {
+                @apply
+                    !top-1/2
+                    !left-1/2
+                    !w-0
+                    !h-0;
+            }
         }
 
         .image, .video {

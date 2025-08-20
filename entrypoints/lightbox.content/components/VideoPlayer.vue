@@ -124,7 +124,7 @@ defineExpose({
 <template>
     <div
         v-bind="props"
-        :class="['video-player', 'group', className]"
+        :class="['group', className]"
         :data-panning="panning"
         :data-paused="paused"
         @mousedown="onMouseDown"
@@ -137,8 +137,8 @@ defineExpose({
             :loop="true"
             unselectable="on"
             @loadedmetadata="onLoadedMetadata"
-            @volumechange="volume = video?.volume; muted = video?.muted"
-            @timeupdate="currentTime = video?.currentTime"
+            @volumechange="volume = video?.volume || 0; muted = video?.muted || true"
+            @timeupdate="currentTime = video?.currentTime || 0"
             @pause="paused = true"
             @play="paused = false"
             @progress="buffered = video?.buffered"
@@ -200,7 +200,7 @@ defineExpose({
 @reference "@/assets/tailwind.css";
 
 @layer components {
-    .video-player {
+    .video {
         @apply
             absolute
             overflow-hidden
