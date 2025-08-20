@@ -5,7 +5,7 @@ import {
     AnyFn,
     noop,
     EventFilter,
-} from '@vueuse/shared';
+} from '@vueuse/core';
 
 function debounceFilter(
     ms: MaybeRefOrGetter<number>,

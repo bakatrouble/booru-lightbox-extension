@@ -4,6 +4,7 @@ import ky from 'ky';
 import yoctoSpinner from 'yocto-spinner';
 import packageJson from '../package.json';
 import 'dotenv/config';
+import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { simpleGit } from 'simple-git';
 import { extensionSlug, updateManifestUrl } from '../wxt.config';
@@ -95,24 +96,22 @@ class ManifestCommand extends Command {
                     const updateManifest = (await ky
                         .get(updateManifestUrl)
                         .json()) as Manifest;
-                    updateManifest.addons[extensionSlug].updates.push({
-                        version,
-                        update_link: v.file.url,
-                    });
-                    const rmManifestRepo = async () => {
-                        await fs.rm('.manifest-repo', {
-                            recursive: true,
-                            force: true,
+                    updateManifest.addons[extensionSlug].updates
+                        .filter((v) => v.version !== version)
+                        .push({
+                            version,
+                            update_link: v.file.url,
                         });
-                    };
                     this.spinner.start('Updating manifest repository...');
-                    try {
-                        await rmManifestRepo();
-                        await fs.mkdir('.manifest-repo');
-                        const git = simpleGit('.manifest-repo');
-                        await git.clone(repoUrl, '.', {
+                    if (!existsSync('.manifest-repo')) {
+                        await simpleGit().clone(repoUrl, '.manifest-repo', {
                             '--branch': 'manifest',
                         });
+                    } else {
+                        await simpleGit('.manifest-repo').pull();
+                    }
+                    const git = simpleGit('.manifest-repo');
+                    try {
                         await fs.writeFile(
                             '.manifest-repo/manifest.json',
                             JSON.stringify(updateManifest, null, 4),
@@ -121,14 +120,12 @@ class ManifestCommand extends Command {
                         await git.commit(`Update manifest for v${version}`);
                         await git.push();
                         this.spinner.success('Manifest updated successfully!');
-                        await rmManifestRepo();
                         process.exit();
                     } catch (error) {
                         this.spinner.error(
                             'Error updating manifest repository',
                         );
                         console.error(error);
-                        await rmManifestRepo();
                         process.exit(1);
                     }
                 }

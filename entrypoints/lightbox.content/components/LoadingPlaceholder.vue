@@ -1,3 +1,6 @@
+<script setup lang="ts">
+</script>
+
 <template>
     <div class="flex items-center flex-col justify-center">
         <svg
@@ -21,8 +24,6 @@
         <div><slot /></div>
     </div>
 </template>
-<script setup lang="ts">
-</script>
 
 <style scoped lang="css">
 @reference "@/assets/tailwind.css";

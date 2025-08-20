@@ -88,13 +88,14 @@ const dragHandler = ({
             // constraint image into screen
             const scaledImageWidth = mediaSize.value.x * currentRatio.value;
             const scaledImageHeight = mediaSize.value.y * currentRatio.value;
+            const imageRight = position.value.x + scaledImageWidth;
+            const imageBottom = position.value.y + scaledImageHeight;
 
             if (scaledImageWidth > windowSize.width.value) {
                 if (position.value.x > 0) {
                     position.value.x = 0;
                 } else if (
-                    position.value.x + scaledImageWidth <
-                    windowSize.width.value
+                    imageRight < windowSize.width.value
                 ) {
                     position.value.x =
                         windowSize.width.value - scaledImageWidth;
@@ -103,8 +104,7 @@ const dragHandler = ({
                 if (position.value.x < 0) {
                     position.value.x = 0;
                 } else if (
-                    position.value.x + scaledImageWidth >
-                    windowSize.width.value
+                    imageRight > windowSize.width.value
                 ) {
                     position.value.x =
                         windowSize.width.value - scaledImageWidth;
@@ -115,18 +115,16 @@ const dragHandler = ({
                 if (position.value.y > 0) {
                     position.value.y = 0;
                 } else if (
-                    position.value.y + scaledImageHeight <
-                    windowSize.height.value
+                    imageBottom < windowSize.height.value
                 ) {
                     position.value.y =
-                        windowSize.width.value - scaledImageHeight;
+                        windowSize.height.value - scaledImageHeight;
                 }
             } else {
                 if (position.value.y < 0) {
                     position.value.y = 0;
                 } else if (
-                    position.value.y + scaledImageHeight >
-                    windowSize.height.value
+                    imageBottom > windowSize.height.value
                 ) {
                     position.value.y =
                         windowSize.height.value - scaledImageHeight;
@@ -366,6 +364,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
 
         .image, .video {
             position: absolute;
+            max-width: unset;
             transition-property: width, height, top, left;
             transition-duration: var(--default-transition-duration);
             transition-timing-function: var(--default-transition-timing-function);

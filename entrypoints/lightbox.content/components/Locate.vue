@@ -15,13 +15,12 @@ useAnimate(box, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], {
 const locateBoxRect = computed(() => {
     if (!locateEl.value && !locateElRect.left.value)
         return { left: 0, top: 0, width: 0, height: 0 };
-    const rect = {
+    return {
         left: `${locateElRect.left.value + scroll.x.value - 5}px`,
         top: `${locateElRect.top.value + scroll.y.value - 5}px`,
         width: `${locateElRect.width.value + 10}px`,
         height: `${locateElRect.height.value + 10}px`,
     };
-    return rect;
 });
 
 const locate = async (el: HTMLElement) => {

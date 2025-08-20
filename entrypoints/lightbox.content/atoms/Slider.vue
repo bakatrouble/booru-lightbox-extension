@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useElementBounding } from '@vueuse/core';
 import { HTMLAttributes } from 'vue';
 
 interface SliderProps extends /* @vue-ignore */ HTMLAttributes {
@@ -10,18 +11,22 @@ const modelValue = defineModel<number>('modelValue');
 
 const seeking = ref(false);
 const slider = ref<HTMLDivElement>();
+const sliderRect = useElementBounding(slider);
 
 const { max, class: className, buffers, ...props } = defineProps<SliderProps>();
 
 const onDragMove = (e: MouseEvent | TouchEvent) => {
-    if (!seeking.value) return;
-    const rect = slider.value!.getBoundingClientRect();
+    if (!seeking.value || !sliderRect.left.value) return;
     const offsetX =
         e instanceof MouseEvent
-            ? e.clientX - rect.left
-            : e.touches[0].clientX - rect.left;
-    const percentage = Math.min(Math.max(offsetX / rect.width, 0), 1);
+            ? e.clientX - sliderRect.left.value
+            : e.touches[0].clientX - sliderRect.left.value;
+    const percentage = Math.min(
+        Math.max(offsetX / sliderRect.width.value, 0),
+        1,
+    );
     modelValue.value = percentage * max;
+    console.log(`${percentage} * ${max} = ${modelValue.value}`);
 };
 
 const onDragStop = () => {
@@ -34,14 +39,7 @@ const onDragStop = () => {
 
 const onDragStart = (e: MouseEvent | TouchEvent) => {
     seeking.value = true;
-    const target = e.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    const offsetX =
-        e instanceof MouseEvent
-            ? e.clientX - rect.left
-            : e.touches[0].clientX - rect.left;
-    const percentage = Math.min(Math.max(offsetX / rect.width, 0), 1);
-    modelValue.value = Math.round(percentage * max);
+    onDragMove(e);
     document.addEventListener('mousemove', onDragMove);
     document.addEventListener('touchmove', onDragMove, { passive: true });
     document.addEventListener('mouseup', onDragStop);

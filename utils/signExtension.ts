@@ -79,7 +79,7 @@ class SignCommand extends Command {
                     (req) => {
                         req.headers.set(
                             'authorization',
-                            `JWT ${getAuth(this.amoKey, this.amoSecret)}`,
+                            `JWT ${getAuth(this.amoKey!, this.amoSecret!)}`,
                         );
                     },
                 ],
