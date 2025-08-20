@@ -461,5 +461,21 @@ const uploadGif = async (uploadLink: UploadLink) => {
             items-center
             justify-center;
     }
+
+    .button {
+        &.page {
+            @apply absolute
+                top-1/2
+                -translate-y-1/2;
+
+            &.left {
+                @apply left-3;
+            }
+
+            &.right {
+                @apply right-3;
+            }
+        }
+    }
 }
 </style>

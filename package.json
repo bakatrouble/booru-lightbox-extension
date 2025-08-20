@@ -1,7 +1,7 @@
 {
     "name": "image-galleries",
     "private": true,
-    "version": "3.2.1",
+    "version": "3.2.2",
     "displayName": "Image Galleries",
     "author": "bakatrouble",
     "description": "Image galleries on some websites",

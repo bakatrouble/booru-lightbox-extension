@@ -65,20 +65,6 @@ const {
             @apply rounded-full
                    aspect-square;
         }
-
-        &.page {
-            @apply absolute
-                   top-1/2
-                   -translate-1/2;
-
-            &.left {
-                @apply left-3;
-            }
-
-            &.right {
-                @apply right-3;
-            }
-        }
     }
 }
 </style>

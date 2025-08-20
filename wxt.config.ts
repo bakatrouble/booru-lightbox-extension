@@ -3,27 +3,18 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig, type WxtViteConfig } from 'wxt';
 
 export const updateManifestUrl =
-    'https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest/manifest.json';
+    'https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest';
 export const extensionSlug = 'booru@bakatrouble.me';
 
-// See https://wxt.dev/api/config.html
 export default defineConfig({
     modules: ['@wxt-dev/module-vue'],
     zip: {
         excludeSources: ['web-ext-artifacts/**/*'],
     },
-    vue: {
-        vite: {
-            template: {
-                compilerOptions: {
-                    // isCustomElement: (tag) => tag === 'mdicon',
-                },
-            },
-        },
-    },
+    filterEntrypoints: ['lightbox', 'background'].concat(process.env.NODE_ENV === 'development' ? ['test-page'] : []),
     vite: (): WxtViteConfig => ({
         build: {
-            sourcemap: true,
+            sourcemap: false,
             minify: false,
             cssMinify: false,
         },
@@ -33,7 +24,7 @@ export default defineConfig({
         browser_specific_settings: {
             gecko: {
                 id: extensionSlug,
-                update_url: updateManifestUrl,
+                update_url: `${updateManifestUrl}/manifest.json`,
             },
         },
         permissions: [

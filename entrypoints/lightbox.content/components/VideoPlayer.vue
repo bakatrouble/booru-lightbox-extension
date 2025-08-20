@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Portal } from 'portal-vue';
-import { HTMLAttributes } from 'vue';
+import { HTMLAttributes, ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import Btn from '@/entrypoints/lightbox.content/atoms/Btn.vue';
 import Panel from '@/entrypoints/lightbox.content/atoms/Panel.vue';
 import Slider from '@/entrypoints/lightbox.content/atoms/Slider.vue';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useElementBounding } from '@vueuse/core';
-import { HTMLAttributes } from 'vue';
+import { HTMLAttributes, ref } from 'vue';
 
 interface SliderProps extends /* @vue-ignore */ HTMLAttributes {
     max: number;

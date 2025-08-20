@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch, reactive } from 'vue';
 import { useDebounce, useWindowSize } from '@vueuse/core';
 import { FullGestureState } from '@vueuse/gesture';
 import { MediaType } from '..';

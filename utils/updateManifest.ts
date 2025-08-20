@@ -8,6 +8,7 @@ import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { simpleGit } from 'simple-git';
 import { extensionSlug, updateManifestUrl } from '../wxt.config';
+import path from "node:path";
 
 const repoUrl = 'git@github.com:bakatrouble/booru-lightbox-extension.git';
 
@@ -35,13 +36,15 @@ interface Version {
     version: string;
 }
 
+interface ManifestUpdateVersion {
+    version: string;
+    update_link: string;
+}
+
 interface Manifest {
     addons: {
         [key: string]: {
-            updates: {
-                version: string;
-                update_link: string;
-            }[];
+            updates: ManifestUpdateVersion[];
         };
     };
 }
@@ -93,15 +96,23 @@ class ManifestCommand extends Command {
             for (const v of versions.results) {
                 if (v.version === version) {
                     this.spinner.success(`Version ${version} found!`);
+                    this.spinner.start('Downloading xpi...');
+
+                    const xpi = await this.client.get(v.file.url, { prefixUrl: '' }).arrayBuffer();
+                    const xpiName = path.basename(v.file.url);
+
                     const updateManifest = (await ky
-                        .get(updateManifestUrl)
+                        .get(`${updateManifestUrl}/manifest.json`)
                         .json()) as Manifest;
-                    updateManifest.addons[extensionSlug].updates
-                        .filter((v) => v.version !== version)
-                        .push({
-                            version,
-                            update_link: v.file.url,
-                        });
+                    updateManifest.addons[extensionSlug].updates = updateManifest.addons[extensionSlug].updates
+                        .filter((v) => v.version !== version);
+                    updateManifest.addons[extensionSlug].updates.push({
+                        version: version,
+                        update_link: `${updateManifestUrl}/${xpiName}`,
+                    });
+
+                    await fs.writeFile(`.manifest-repo/${xpiName}`, Buffer.from(xpi));
+                    this.spinner.success('Downloaded xpi');
                     this.spinner.start('Updating manifest repository...');
                     if (!existsSync('.manifest-repo')) {
                         await simpleGit().clone(repoUrl, '.manifest-repo', {
@@ -117,6 +128,7 @@ class ManifestCommand extends Command {
                             JSON.stringify(updateManifest, null, 4),
                         );
                         await git.add('manifest.json');
+                        await git.add(xpiName);
                         await git.commit(`Update manifest for v${version}`);
                         await git.push();
                         this.spinner.success('Manifest updated successfully!');

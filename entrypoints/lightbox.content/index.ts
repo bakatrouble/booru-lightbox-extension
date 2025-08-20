@@ -19,7 +19,7 @@ import {
     mdiPause,
     mdiFullscreen,
 } from '@mdi/js';
-import '../../assets/tailwind.css';
+import styles from '../../assets/tailwind.css?inline';
 
 export enum MediaType {
     Image = 'image',
@@ -75,7 +75,7 @@ export default defineContentScript({
                 name: 'booru-lightbox-ui',
                 position: 'inline',
                 anchor: 'body',
-                css: '@layer theme, base, properties, components, utilities;',
+                css: styles,
                 onMount(container) {
                     return mountApp(mod, container);
                 },
