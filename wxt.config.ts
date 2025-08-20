@@ -11,7 +11,7 @@ export default defineConfig({
     zip: {
         excludeSources: ['web-ext-artifacts/**/*'],
     },
-    filterEntrypoints: ['lightbox', 'background'].concat(process.env.NODE_ENV === 'development' ? ['test-page'] : []),
+    filterEntrypoints: ['lightbox', 'background', 'options'].concat(process.env.NODE_ENV === 'development' ? ['test-page'] : []),
     vite: (): WxtViteConfig => ({
         build: {
             sourcemap: false,

@@ -1,10 +1,10 @@
 {
-    "name": "image-galleries",
+    "name": "booru-lightbox",
     "private": true,
     "version": "3.2.2",
-    "displayName": "Image Galleries",
+    "displayName": "Booru Lightbox",
     "author": "bakatrouble",
-    "description": "Image galleries on some websites",
+    "description": "Lightbox viewers on booru websites",
     "type": "module",
     "scripts": {
         "dev": "wxt",

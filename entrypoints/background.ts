@@ -1,11 +1,5 @@
 export default defineBackground({
     main: () => {
-        if (import.meta.env.DEV) {
-            browser.tabs.create({
-                url: import.meta.resolve('/test-page.html')
-            });
-        }
-
         browser.webRequest.onHeadersReceived.addListener(
             ({ responseHeaders, url }) => {
                 console.log('Adding CSP header to', url, responseHeaders);

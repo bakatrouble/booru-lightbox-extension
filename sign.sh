@@ -7,6 +7,6 @@ set -xe
 pnpm sign \
     -k $AMO_KEY \
     -s $AMO_SECRET
-pnpm manifest \
+pnpm update-manifest \
     -k $AMO_KEY \
     -s $AMO_SECRET
