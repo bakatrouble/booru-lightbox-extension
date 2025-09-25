@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-    --base-z-index: 10000;
+    --base-z-index: 1000000;
     --default-transition-duration: 0.3s;
     --color-background: var(--color-gray-900);
     --color-text: var(--color-white);
