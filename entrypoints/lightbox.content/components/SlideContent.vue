@@ -331,7 +331,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
                 ref="video"
                 class="video"
                 :panning="panning"
-                :showing="current"
+                :isCurrent="current"
                 :style="{
                     width: `${mediaSize.x * currentRatio}px`,
                     height: `${mediaSize.y * currentRatio}px`,

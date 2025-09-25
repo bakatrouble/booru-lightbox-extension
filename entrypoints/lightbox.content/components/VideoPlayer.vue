@@ -9,12 +9,12 @@ import { formatDuration } from '../utils';
 
 interface VideoPlayerProps extends /* @vue-ignore */ HTMLAttributes {
     panning: boolean;
-    showing?: boolean;
+    isCurrent?: boolean;
 }
 
 const {
     panning,
-    showing,
+    isCurrent,
     class: className,
     ...props
 } = defineProps<VideoPlayerProps>();
@@ -60,14 +60,37 @@ const hideToolbar = useDebounceFnStoppable(() => {
     }
 }, 300);
 
+const play = () => {
+    video.value?.play();
+}
+
+const pause = () => {
+    video.value?.pause();
+};
+
+const togglePlayPause = () => {
+    if (video.value?.paused) play();
+    else pause();
+}
+
+const onKeyDown = (e: KeyboardEvent) => {
+    if (!isCurrent) return;
+    if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+    }
+}
+
 onMounted(() => {
     hideToolbar();
+    document.addEventListener('keydown', onKeyDown);
     document.addEventListener('mousemove', onMouseMove);
     document.documentElement.addEventListener('mouseleave', hideToolbar);
 });
 
 onUnmounted(() => {
     hideToolbar.cancel();
+    document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('mousemove', onMouseMove);
     document.documentElement.removeEventListener('mouseleave', hideToolbar);
 });
@@ -79,7 +102,7 @@ const onLoadedMetadata = () => {
 };
 
 const onMouseMove = () => {
-    if (!showing) return;
+    if (!isCurrent) return;
     toolbar.value = true;
     blurToolbar.value = false;
     window.requestAnimationFrame(() => (blurToolbar.value = true));
@@ -98,19 +121,14 @@ const onMouseUp = (e: MouseEvent) => {
         mouseDownLocation.value.x === e.clientX &&
         mouseDownLocation.value.y === e.clientY
     ) {
-        if (video.value!.paused) video.value!.play();
-        else video.value!.pause();
+        togglePlayPause();
     }
 };
 
-const pause = () => {
-    video.value?.pause();
-};
-
 watch(
-    () => showing,
+    () => isCurrent,
     () => {
-        if (!showing) {
+        if (!isCurrent) {
             hideToolbar();
         }
     },
@@ -150,11 +168,11 @@ defineExpose({
             <btn icon="play" class="play-btn" />
         </div>
 
-        <portal to="video-toolbar" :disabled="!showing || !loaded">
+        <portal to="video-toolbar" :disabled="!isCurrent || !loaded">
             <div class="absolute bottom-5 left-0 right-0 flex flex-row justify-center items-center">
                 <panel
                     class="video-toolbar w-1/2 blur-out !transition-opacity-interactive"
-                    :data-visible="toolbar && showing"
+                    :data-visible="toolbar && isCurrent"
                     :data-blur="blurToolbar"
                     @mouseenter="toolbarLock = true"
                     @mouseleave="toolbarLock = false"
