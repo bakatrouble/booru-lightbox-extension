@@ -172,6 +172,9 @@ const pinchHandler = ({
     event,
 }: FullGestureState<'pinch'>) => {
     event?.preventDefault();
+    if (!loaded.value) {
+        return;
+    }
     if (!pinching.value && pinchingGesture) {
         // pinch start
         pinching.value = true;
@@ -210,6 +213,10 @@ const pinchHandler = ({
 };
 
 const wheelHandler = ({ delta: [x, y], event }: FullGestureState<'wheel'>) => {
+    event?.preventDefault();
+    if (!loaded.value) {
+        return;
+    }
     const newRatio = Math.max(
         initialRatio.value * 0.1,
         currentRatio.value * (1 + Math.max(-1, (-y || x) / 500)),
