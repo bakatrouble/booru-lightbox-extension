@@ -281,6 +281,9 @@ const upload = async (uploadLink: UploadLink) => {
     if (currentMedia.value!.src.endsWith('.gif')) {
         return uploadGif(uploadLink);
     }
+    if (currentMedia.value!.type === MediaType.Video) {
+        return uploadVideo(uploadLink);
+    }
 
     const el = $el
         .value!.querySelector(`.slide-${currentIdx} .content`)!
@@ -309,6 +312,15 @@ const uploadGif = async (uploadLink: UploadLink) => {
     await browser.runtime.sendMessage('uploader@bakatrouble.me', {
         type: 'upload',
         method: 'gif',
+        endpoint: uploadLink.url,
+        url: currentMedia.value!.src,
+    });
+};
+
+const uploadVideo = async (uploadLink: UploadLink) => {
+    await browser.runtime.sendMessage('uploader@bakatrouble.me', {
+        type: 'upload',
+        method: 'video',
         endpoint: uploadLink.url,
         url: currentMedia.value!.src,
     });
