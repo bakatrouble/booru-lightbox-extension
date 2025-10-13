@@ -6,6 +6,7 @@ import rule34CollectImages from './rule34';
 import localCollectImages from './local';
 import { sankakuComplexCollectImages } from './sankakuComplex';
 import { realBooruCollectImages } from './realbooru';
+import yandereCollectImages from "@/entrypoints/lightbox.content/websites/yandere";
 
 export const collectImagesModules = [
     e621CollectImages,
@@ -16,6 +17,7 @@ export const collectImagesModules = [
     localCollectImages,
     sankakuComplexCollectImages,
     realBooruCollectImages,
+    yandereCollectImages,
 ];
 
 export const getCollectImagesModule = (
