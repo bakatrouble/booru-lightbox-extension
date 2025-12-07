@@ -24,7 +24,7 @@
 }
 
 @utility transition-opacity-interactive {
-    @apply transition-opacity opacity-0 pointer-events-none;
+    @apply transition-[opacity,filter] opacity-0 pointer-events-none;
 
     &[data-visible="true"] {
         @apply opacity-100 pointer-events-auto;

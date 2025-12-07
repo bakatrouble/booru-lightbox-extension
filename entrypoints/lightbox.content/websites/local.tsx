@@ -1,3 +1,5 @@
+import { MediaType } from "@/entrypoints/lightbox.content";
+
 const localCollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
         Array.from(document.querySelectorAll('[data-mime^=image\\/]')).map(
@@ -5,7 +7,6 @@ const localCollectImages: CollectImagesOptions = {
                 el: el as HTMLElement,
                 item: {
                     src: (el as HTMLAnchorElement).href,
-                    // label: <a href={(el as HTMLAnchorElement).href}>Show image</a>,
                     type: MediaType.Image,
                     label:
                         (el as HTMLAnchorElement).getAttribute(
