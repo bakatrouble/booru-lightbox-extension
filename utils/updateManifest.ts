@@ -111,7 +111,6 @@ class ManifestCommand extends Command {
                         update_link: `${updateManifestUrl}/${xpiName}`,
                     });
 
-                    await fs.writeFile(`.manifest-repo/${xpiName}`, Buffer.from(xpi));
                     this.spinner.success('Downloaded xpi');
                     this.spinner.start('Updating manifest repository...');
                     if (!existsSync('.manifest-repo')) {
@@ -121,6 +120,7 @@ class ManifestCommand extends Command {
                     } else {
                         await simpleGit('.manifest-repo').pull();
                     }
+                    await fs.writeFile(`.manifest-repo/${xpiName}`, Buffer.from(xpi));
                     const git = simpleGit('.manifest-repo');
                     try {
                         await fs.writeFile(
