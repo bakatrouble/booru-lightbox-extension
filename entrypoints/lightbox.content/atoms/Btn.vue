@@ -48,7 +48,7 @@ const {
                uppercase
                rounded-lg;
 
-        &:hover {
+        &:hover, .button-activator:hover > & {
             background-color: var(--color-button-hover);
 
             &:active {

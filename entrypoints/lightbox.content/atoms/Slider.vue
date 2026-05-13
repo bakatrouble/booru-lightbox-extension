@@ -48,41 +48,47 @@ const onDragStart = (e: MouseEvent | TouchEvent) => {
 </script>
 
 <template>
-<div
-    ref="slider"
-    :class="['slider', className]"
-    v-bind="props"
-    @mousedown.stop="onDragStart"
-    @touchstart.stop="onDragStart"
->
     <div
-        v-if="buffers"
-        v-for="(buffer, i) in buffers"
-        :key="i"
-        class="buffer"
-        :style="{
+        :class="['slider-area', className]"
+        v-bind="props"
+        @mousedown.stop="onDragStart"
+        @touchstart.stop="onDragStart"
+    >
+        <div
+            ref="slider"
+            class="slider"
+        >
+            <div
+                v-if="buffers"
+                v-for="(buffer, i) in buffers"
+                :key="i"
+                class="buffer"
+                :style="{
             left: `${((buffer.start || 0) / max * 100)}%`,
             width: `${((buffer.end || 0) - (buffer.start || 0)) / max * 100}%`,
         }"
-    />
-    <div
-        class="progress"
-        :style="{
+            />
+            <div
+                class="progress"
+                :style="{
             width: `${((modelValue || 0) / max * 100)}%`,
         }"
-    />
-</div>
+            />
+        </div>
+    </div>
 </template>
 
 <style scoped lang="css">
 @reference "@/assets/tailwind.css";
 
 @layer components {
+    .slider-area {
+        @apply py-4 cursor-pointer;
+    }
     .slider {
         @apply h-2
                relative
-               bg-gray-700
-               cursor-pointer;
+               bg-gray-700;
 
         .progress, .buffer {
             @apply h-2
