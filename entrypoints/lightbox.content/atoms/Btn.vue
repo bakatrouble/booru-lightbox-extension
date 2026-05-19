@@ -56,7 +56,7 @@ const {
             }
         }
 
-        &:disabled {
+        &:disabled, :disabled & {
             @apply opacity-30
                    pointer-events-none;
         }

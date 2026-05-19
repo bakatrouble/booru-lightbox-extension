@@ -404,28 +404,28 @@ const uploadVideo = async (uploadLink: UploadLink) => {
                 icon="close"
             />
         </panel>
-        <div
+        <button
             class="left page button-activator"
             @click="emit('slideDelta', -1)"
+            :disabled="currentIdx === 0"
         >
             <btn
-                :disabled="currentIdx === 0"
                 class="icon button"
                 icon="chevronLeft"
                 icon-size="30"
             />
-        </div>
-        <div
+        </button>
+        <button
             class="right page button-activator"
             @click="emit('slideDelta', +1)"
+            :disabled="currentIdx === loadedImages.length - 1"
         >
             <btn
-                :disabled="currentIdx === loadedImages.length - 1"
                 class="icon button"
                 icon="chevronRight"
                 icon-size="30"
             />
-        </div>
+        </button>
         <portal-target name="video-toolbar" />
     </div>
 </template>
@@ -486,8 +486,11 @@ const uploadVideo = async (uploadLink: UploadLink) => {
         @apply absolute
             top-0 bottom-0
             m-3
-            cursor-pointer
             flex justify-center items-center;
+
+        &:not(:disabled) {
+            @apply cursor-pointer;
+        }
 
         &.left {
             @apply left-0;
