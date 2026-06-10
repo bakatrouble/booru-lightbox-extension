@@ -406,8 +406,8 @@ const uploadVideo = async (uploadLink: UploadLink) => {
         </panel>
         <button
             class="left page button-activator"
-            @click="emit('slideDelta', -1)"
-            :disabled="currentIdx === 0"
+            @click="!isFirstIdx && emit('slideDelta', -1)"
+            :disabled="isFirstIdx"
         >
             <btn
                 class="icon button"
@@ -417,8 +417,8 @@ const uploadVideo = async (uploadLink: UploadLink) => {
         </button>
         <button
             class="right page button-activator"
-            @click="emit('slideDelta', +1)"
-            :disabled="currentIdx === loadedImages.length - 1"
+            @click="!isLastIdx && emit('slideDelta', +1)"
+            :disabled="isLastIdx"
         >
             <btn
                 class="icon button"
