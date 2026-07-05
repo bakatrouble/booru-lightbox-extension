@@ -485,7 +485,7 @@ const uploadVideo = async (uploadLink: UploadLink) => {
     .page {
         @apply absolute
             top-0 bottom-0
-            m-3
+            p-3
             flex justify-center items-center;
 
         &:not(:disabled) {
