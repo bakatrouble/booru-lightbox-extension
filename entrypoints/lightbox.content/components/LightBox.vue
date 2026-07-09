@@ -369,7 +369,7 @@ const uploadVideo = async (uploadLink: UploadLink) => {
         <panel class="absolute top-2 left-2">
             {{ currentIdx + 1 }} / {{ loadedImages.length }}
         </panel>
-        <panel class="blur-out absolute top-2 right-2 flex flex-row gap-2">
+        <panel class="blur-out absolute top-2 right-2 flex flex-row gap-2 z-1">
             <btn
                 v-if="currentMedia?.type === MediaType.Image"
                 v-for="item in uploadLinks"
