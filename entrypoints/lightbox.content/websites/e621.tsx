@@ -7,6 +7,7 @@ const e621CollectImages: CollectImagesOptions = {
                 const el = elem as HTMLElement;
                 const fileUrl = el.getAttribute('data-file-url')!;
                 const fileExt = el.getAttribute('data-file-ext');
+                const tags = el.getAttribute('data-tags');
                 const pageUrl = el.querySelector('a')!.href;
                 let item: MediaListItem['item'];
                 switch (fileExt) {
@@ -33,6 +34,11 @@ const e621CollectImages: CollectImagesOptions = {
                         };
                         break;
                 }
+                item.label = async () => (await browser.runtime.sendMessage('uploader@bakatrouble.me', {
+                    type: 'getLabel',
+                    website: 'e621',
+                    tags,
+                }));
                 return {
                     el,
                     item,
