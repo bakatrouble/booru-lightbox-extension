@@ -6,6 +6,7 @@ import Panel from '@/entrypoints/lightbox.content/atoms/Panel.vue';
 import Slider from '@/entrypoints/lightbox.content/atoms/Slider.vue';
 import { useDebounceFnStoppable } from '@/entrypoints/lightbox.content/composables/useDebounceFnStoppable';
 import { formatDuration } from '../utils';
+import { useLocalStorage, useMediaControls } from "@vueuse/core";
 
 interface VideoPlayerProps extends /* @vue-ignore */ HTMLAttributes {
     panning: boolean;
@@ -22,37 +23,27 @@ const {
 const emit = defineEmits(['loadedMetadata']);
 
 const loaded = ref(false);
-const volume = ref(0);
-const muted = ref(false);
-const currentTime = ref(0);
-const paused = ref(true);
 const toolbar = ref(true);
 const blurToolbar = ref(true);
-const duration = ref(0);
 const toolbarLock = ref(false);
-const buffered = ref<TimeRanges>();
 const mouseDownLocation = ref<Vector2>({ x: 0, y: 0 });
+
+const video = ref<HTMLVideoElement>();
+const { volume: videoVolume, muted: videoMuted, currentTime, playing, duration, buffered } = useMediaControls(video);
+const volume = useLocalStorage(`lightbox.volume`, 1, { mergeDefaults: true });
+const muted = useLocalStorage(`lightbox.muted`, false, { mergeDefaults: true });
 
 const formattedTime = computed(() => formatDuration(currentTime.value));
 const formattedLength = computed(() => formatDuration(duration.value));
 const bufferedSegments = computed(() =>
-    [...new Array(buffered.value?.length || 0).keys()].map((i) => ({
-        start: buffered.value!.start(i),
-        end: buffered.value!.end(i),
+    buffered.value.map((segment) => ({
+        start: segment[0],
+        end: segment[1],
     })),
 );
 
-const video = ref<HTMLVideoElement>();
-
-watch(
-    () => video.value,
-    (video) => {
-        if (video) {
-            volume.value = video.volume;
-            muted.value = video.muted;
-        }
-    },
-);
+watch(volume, volume => videoVolume.value = volume, { immediate: true });
+watch(muted, muted => videoMuted.value = muted, { immediate: true });
 
 const hideToolbar = useDebounceFnStoppable(() => {
     if (!toolbarLock.value) {
@@ -60,24 +51,11 @@ const hideToolbar = useDebounceFnStoppable(() => {
     }
 }, 300);
 
-const play = () => {
-    video.value?.play();
-}
-
-const pause = () => {
-    video.value?.pause();
-};
-
-const togglePlayPause = () => {
-    if (video.value?.paused) play();
-    else pause();
-}
-
 const onKeyDown = (e: KeyboardEvent) => {
     if (!isCurrent) return;
     if (e.code === 'Space') {
         e.preventDefault();
-        togglePlayPause();
+        playing.value = !playing.value;
     }
 }
 
@@ -97,7 +75,6 @@ onUnmounted(() => {
 
 const onLoadedMetadata = () => {
     loaded.value = true;
-    duration.value = video.value!.duration;
     emit('loadedMetadata', video.value!.videoWidth, video.value!.videoHeight);
 };
 
@@ -121,7 +98,7 @@ const onMouseUp = (e: MouseEvent) => {
         mouseDownLocation.value.x === e.clientX &&
         mouseDownLocation.value.y === e.clientY
     ) {
-        togglePlayPause();
+        playing.value = !playing.value;;
     }
 };
 
@@ -135,7 +112,7 @@ watch(
 );
 
 defineExpose({
-    pause,
+    pause: () => playing.value = false,
 });
 </script>
 
@@ -144,7 +121,7 @@ defineExpose({
         v-bind="props"
         :class="['group', className]"
         :data-panning="panning"
-        :data-paused="paused"
+        :data-paused="!playing"
         @mousedown="onMouseDown"
         @mouseup="onMouseUp"
     >
@@ -155,12 +132,12 @@ defineExpose({
             :loop="true"
             unselectable="on"
             @loadedmetadata="onLoadedMetadata"
-            @volumechange="volume = video?.volume || 0; muted = video?.muted || true"
-            @timeupdate="currentTime = video?.currentTime || 0"
-            @pause="paused = true"
-            @play="paused = false"
-            @progress="buffered = video?.buffered"
         >
+            <!--            @volumechange="volume = video?.volume || 0; muted = video?.muted || true"-->
+            <!--            @timeupdate="currentTime = video?.currentTime || 0"-->
+            <!--            @pause="playing = false"-->
+            <!--            @play="playing = true"-->
+            <!--            @progress="buffered = video?.buffered"-->
             <slot />
         </video>
 
@@ -180,19 +157,19 @@ defineExpose({
                 >
                     <btn
                         class="play-btn"
-                        @click="video!.paused ? video!.play() : video!.pause()"
-                        :icon="paused ? 'play' : 'pause'"
+                        @click="playing = !playing"
+                        :icon="playing ? 'pause' : 'play'"
                     />
                     <div class="flex flex-row items-center overflow-hidden w-10 hover:w-30 transition-all">
                         <btn
-                            @click="video!.muted = !video!.muted"
+                            @click="muted = !muted"
                             :icon="muted ? 'volumeOff' : 'volumeHigh'"
                         />
                         <slider
                             class="w-24"
                             :model-value="volume"
                             :max="1"
-                            @update:model-value="video!.volume = $event!"
+                            @update:model-value="volume = $event!"
                         />
                     </div>
                     <span class="mx-4">{{ formattedTime }}</span>
@@ -201,7 +178,7 @@ defineExpose({
                         class="progress-slider flex-grow-1"
                         :max="duration"
                         :buffers="bufferedSegments"
-                        @update:model-value="video!.currentTime = $event!"
+                        @update:model-value="currentTime = $event!"
                     />
                     <span class="mx-4">{{ formattedLength }}</span>
                     <btn

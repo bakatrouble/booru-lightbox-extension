@@ -34,11 +34,17 @@ const e621CollectImages: CollectImagesOptions = {
                         };
                         break;
                 }
-                item.label = async () => (await browser.runtime.sendMessage('uploader@bakatrouble.me', {
-                    type: 'getLabel',
-                    website: 'e621',
-                    tags,
-                }));
+                item.label = async () => {
+                    try {
+                        return (await browser.runtime.sendMessage('uploader@bakatrouble.me', {
+                            type: 'getLabel',
+                            website: 'e621',
+                            tags,
+                        }));
+                    } catch (e) {
+                        return undefined;
+                    }
+                }
                 return {
                     el,
                     item,
