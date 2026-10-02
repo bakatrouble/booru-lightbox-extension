@@ -277,6 +277,7 @@ watch([windowSize.width, windowSize.height], onWindowResize);
 
 const onImageLoad = (type: 'main' | 'preview') => {
     if (!image.value) return;
+    if (type === 'main') return;
     mediaSize.value = {
         x: image.value.naturalWidth || 0,
         y: image.value.naturalHeight || 0,
@@ -403,7 +404,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             }
         }
 
-        &[data-loaded="true"] {
+        &[data-loaded="true"], &[data-preview-loaded="true"] {
             @apply
                 opacity-100;
         }
