@@ -6,6 +6,7 @@ const e621CollectImages: CollectImagesOptions = {
             (elem) => {
                 const el = elem as HTMLElement;
                 const fileUrl = el.getAttribute('data-file-url')!;
+                const previewUrl = el.getAttribute('data-preview-url')!;
                 const fileExt = el.getAttribute('data-file-ext');
                 const tags = el.getAttribute('data-tags');
                 const pageUrl = el.querySelector('a')!.href;
@@ -21,6 +22,7 @@ const e621CollectImages: CollectImagesOptions = {
                     case 'webm':
                     case 'mp4':
                         item = {
+                            preview: previewUrl,
                             src: fileUrl,
                             type: MediaType.Video,
                             pageUrl,
@@ -28,6 +30,7 @@ const e621CollectImages: CollectImagesOptions = {
                         break;
                     default:
                         item = {
+                            preview: previewUrl,
                             src: fileUrl,
                             type: MediaType.Image,
                             pageUrl,

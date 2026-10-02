@@ -38,12 +38,14 @@ declare global {
     type MediaTypeCallback = () => Promise<MediaTypeValue>;
 
     interface MediaData {
+        preview?: MediaUrl | MediaUrlCallback;
         src: MediaUrl | MediaUrlCallback;
         label?: MediaLabel | MediaLabelCallback;
         type?: MediaTypeValue | MediaTypeCallback;
         pageUrl?: MediaUrl | MediaUrlCallback;
     }
     interface MediaDataScalar {
+        preview?: MediaUrl;
         src: MediaUrl;
         label?: MediaLabel;
         type?: MediaTypeValue;

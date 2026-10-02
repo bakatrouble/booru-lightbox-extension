@@ -16,6 +16,7 @@ const { media, current, sliding, index } = defineProps<{
 const emit = defineEmits(['zoomStart', 'zoomEnd']);
 
 const loaded = ref(false);
+const previewLoaded = ref(false);
 const mediaSize = ref<Vector2>({ x: 0, y: 0 });
 const windowSize = useWindowSize();
 const initialRatio = ref(1);
@@ -28,6 +29,7 @@ const zoomedIn = ref(false);
 const delayedPanning = useDebounce(panning, 100);
 
 const image = ref<HTMLImageElement>();
+const preview = ref<HTMLImageElement>();
 const video = ref<typeof VideoPlayer>();
 
 const unloadedPosition = {
@@ -273,13 +275,18 @@ const onWindowResize = () => {
 };
 watch([windowSize.width, windowSize.height], onWindowResize);
 
-const onImageLoad = () => {
+const onImageLoad = (type: 'main' | 'preview') => {
     if (!image.value) return;
     mediaSize.value = {
         x: image.value.naturalWidth || 0,
         y: image.value.naturalHeight || 0,
     };
-    loaded.value = true;
+    if (type === 'preview') {
+        previewLoaded.value = true;
+    } else {
+        loaded.value = true;
+    }
+    console.log(type);
     onWindowResize();
 };
 
@@ -296,19 +303,36 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
 
 <template>
     <div :class="`slide-${index}`">
-        <loading-placeholder v-if="!loaded">
+        <loading-placeholder v-if="!(loaded || previewLoaded)">
             Loading media...
         </loading-placeholder>
         <div
             v-drag="dragHandler"
             v-pinch="pinchHandler"
             v-wheel="wheelHandler"
-            :data-loaded="loaded"
+            :data-loaded="loaded || previewLoaded"
             :data-panning="panning"
             :data-panning-delayed="delayedPanning"
             class="content"
             @dblclick="onDoubleClick"
         >
+            <img
+                v-if="media.item.preview && !loaded"
+                ref="preview"
+                class="image"
+                :src="media.item.preview"
+                draggable="false"
+                unselectable="on"
+                crossorigin=""
+                :style="{
+                    width: `${mediaSize.x * currentRatio}px`,
+                    height: `${mediaSize.y * currentRatio}px`,
+                    left: `${position.x}px`,
+                    top: `${position.y}px`,
+                }"
+                @load="() => onImageLoad('preview')"
+            />
+
             <img
                 v-if="media.item.type === MediaType.Image"
                 ref="image"
@@ -323,7 +347,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
                     left: `${position.x}px`,
                     top: `${position.y}px`,
                 }"
-                @load="onImageLoad"
+                @load="() => onImageLoad('main')"
             />
 
             <video-player

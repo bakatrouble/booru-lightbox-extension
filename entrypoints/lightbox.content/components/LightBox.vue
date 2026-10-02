@@ -122,6 +122,7 @@ const loadImage = async (idx: number) => {
     loadedImages.value[idx] = {
         el,
         item: {
+            preview: await resolveScalarOrFunction(item.preview),
             src: await resolveScalarOrFunction(item.src),
             label: await resolveScalarOrFunction(item.label),
             type: await resolveScalarOrFunction(item.type),
