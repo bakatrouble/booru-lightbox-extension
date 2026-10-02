@@ -310,7 +310,8 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             v-drag="dragHandler"
             v-pinch="pinchHandler"
             v-wheel="wheelHandler"
-            :data-loaded="loaded || previewLoaded"
+            :data-loaded="loaded"
+            :data-preview-loaded="previewLoaded"
             :data-panning="panning"
             :data-panning-delayed="delayedPanning"
             class="content"
@@ -319,7 +320,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             <img
                 v-if="media.item.preview && !loaded"
                 ref="preview"
-                class="image"
+                class="image preview"
                 :src="media.item.preview"
                 draggable="false"
                 unselectable="on"
@@ -336,7 +337,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             <img
                 v-if="media.item.type === MediaType.Image"
                 ref="image"
-                class="image"
+                class="image main"
                 :src="media.item.src"
                 draggable="false"
                 unselectable="on"
@@ -408,7 +409,17 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
         }
 
         &[data-loaded="false"] {
-            .image, .video {
+            .image.main, .video {
+                @apply
+                    !top-1/2
+                    !left-1/2
+                    !w-0
+                    !h-0;
+            }
+        }
+
+        &[data-preview-loaded="false"] {
+            .image.preview {
                 @apply
                     !top-1/2
                     !left-1/2
