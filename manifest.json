@@ -161,6 +161,10 @@
                 {
                     "version": "3.7.4",
                     "update_link": "https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest/booru_lightbox_bakatrouble-3.7.4.xpi"
+                },
+                {
+                    "version": "3.7.5",
+                    "update_link": "https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest/booru_lightbox_bakatrouble-3.7.5.xpi"
                 }
             ]
         }
