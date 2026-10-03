@@ -408,7 +408,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
                 opacity-100;
         }
 
-        &[data-loaded="false"] {
+        &[data-loaded="false"]:not([data-preview-loaded="true"]) {
             .image.main, .video {
                 @apply
                     !top-1/2
@@ -428,12 +428,19 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
             }
         }
 
+        &[data-preview-loaded="true"][data-loaded="false"] {
+            .image.main {
+                @apply !opacity-0;
+            }
+        }
+
         .image, .video {
             position: absolute;
             max-width: unset;
             transition-property: width, height, top, left;
             transition-duration: var(--default-transition-duration);
             transition-timing-function: var(--default-transition-timing-function);
+            opacity: 100%;
         }
     }
 }
