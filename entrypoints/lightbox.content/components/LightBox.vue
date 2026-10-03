@@ -116,6 +116,7 @@ const loadImage = async (idx: number) => {
         loadedImages.value[idx] !== undefined
     )
         return;
+    console.log(`loadImage: ${idx}`);
     loadedImages.value[idx] = false;
     const { el, item: itemData } = imageList[idx];
     const item = await resolveScalarOrFunction(itemData);
