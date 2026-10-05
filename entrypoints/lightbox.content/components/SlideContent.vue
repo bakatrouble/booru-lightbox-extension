@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from 'vue';
-import { useDebounce, useWindowSize } from '@vueuse/core';
+import { useDebounce, useWindowSize, useImage } from '@vueuse/core';
 import { FullGestureState } from '@vueuse/gesture';
 import { MediaType } from '..';
 import LoadingPlaceholder from './LoadingPlaceholder.vue';
@@ -13,7 +13,7 @@ const { media, current, sliding, index } = defineProps<{
     index: number;
 }>();
 
-const emit = defineEmits(['zoomStart', 'zoomEnd']);
+const emit = defineEmits(['zoomStart', 'zoomEnd', 'previewLoad', 'load']);
 
 const loaded = ref(false);
 const previewLoaded = ref(false);
@@ -276,15 +276,20 @@ const onWindowResize = () => {
 watch([windowSize.width, windowSize.height], onWindowResize);
 
 const onImageLoad = (type: 'main' | 'preview') => {
-    if (!image.value) return;
+    const element = type === 'main' ? image : preview;
+    if (!element.value) return;
     mediaSize.value = {
-        x: image.value.naturalWidth || 0,
-        y: image.value.naturalHeight || 0,
+        x: element.value.naturalWidth || 0,
+        y: element.value.naturalHeight || 0,
     };
     if (type === 'preview') {
         previewLoaded.value = true;
+        if (!loaded.value) {
+            emit('previewLoad');
+        }
     } else {
         loaded.value = true;
+        emit('load')
     }
     console.log(type);
     onWindowResize();

@@ -17,6 +17,7 @@ import Btn from '../atoms/Btn.vue';
 import { resolveScalarOrFunction } from '../utils';
 import LoadingPlaceholder from './LoadingPlaceholder.vue';
 import SlideContent from './SlideContent.vue';
+import Spinner from "@/entrypoints/lightbox.content/atoms/Spinner.vue";
 
 const { show, currentIdx, imageList, collectImagesModule } = defineProps<{
     show: boolean;
@@ -37,6 +38,7 @@ const loadedImages = ref<(LoadedMediaListItem | false | undefined)[]>([]);
 const uploadLinks = ref<UploadLink[]>([]);
 const pressedKeys = ref(new Set<string>());
 const copiedFeedback = ref(false);
+const previewLoading = ref(false);
 
 const prevPageCounter = ref(0);
 const nextPageCounter = ref(0);
@@ -163,6 +165,7 @@ watch(
     () => currentIdx,
     (val) => {
         loadImages(val!);
+        previewLoading.value = false;
     },
 );
 
@@ -356,6 +359,8 @@ const uploadVideo = async (uploadLink: UploadLink) => {
                     :sliding="dragging"
                     @zoom-start="() => pinching = true"
                     @zoom-end="() => pinching = false"
+                    @preview-load="() => previewLoading = true"
+                    @load="() => previewLoading = false"
                 />
                 <loading-placeholder v-else>
                     Loading metadata...
@@ -368,8 +373,11 @@ const uploadVideo = async (uploadLink: UploadLink) => {
             </template>
             <component :is="currentMedia.label" v-else />
         </panel>
-        <panel class="absolute top-2 left-2">
+        <panel class="absolute top-2 left-2 flex flex-row items-center">
             {{ currentIdx + 1 }} / {{ loadedImages.length }}
+            <div v-if="previewLoading" class="ml-2 flex flex-row items-center">
+                Displaying preview <spinner size="20px" class="ml-2" />
+            </div>
         </panel>
         <panel class="blur-out absolute top-2 right-2 flex flex-row gap-2 z-1">
             <btn
