@@ -282,6 +282,10 @@ const locate = () => {
 };
 
 const upload = async (uploadLink: UploadLink) => {
+    if (displayingPreview.value) {
+        return;
+    }
+
     if (currentMedia.value!.src.endsWith('.gif')) {
         return uploadGif(uploadLink);
     }
