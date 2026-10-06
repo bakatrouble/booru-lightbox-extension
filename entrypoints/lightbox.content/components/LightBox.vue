@@ -373,7 +373,9 @@ const uploadVideo = async (uploadLink: UploadLink) => {
         </panel>
         <panel class="absolute top-2 left-2 flex flex-row items-center">
             {{ currentIdx + 1 }} / {{ loadedImages.length }}
-            <spinner v-if="displayingPreview[currentIdx]" size="20px" class="ml-2" />
+            <div :class="['transition-all overflow-hidden', displayingPreview[currentIdx] ? 'w-7' : 'w-0']">
+                <spinner v-if="displayingPreview[currentIdx]" size="calc(var(--spacing) * 5)" class="ml-2" />
+            </div>
         </panel>
         <panel class="blur-out absolute top-2 right-2 flex flex-row gap-2 z-1">
             <btn
