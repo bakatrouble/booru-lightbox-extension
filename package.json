@@ -1,7 +1,7 @@
 {
     "name": "booru-lightbox",
     "private": true,
-    "version": "3.7.6",
+    "version": "3.7.7",
     "displayName": "Booru Lightbox",
     "author": "bakatrouble",
     "description": "Lightbox viewers on booru websites",

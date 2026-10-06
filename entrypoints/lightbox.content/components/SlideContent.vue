@@ -13,7 +13,9 @@ const { media, current, sliding, index } = defineProps<{
     index: number;
 }>();
 
-const emit = defineEmits(['zoomStart', 'zoomEnd', 'previewLoad', 'load']);
+const displayingPreview = defineModel<boolean>('displayingPreview');
+
+const emit = defineEmits(['zoomStart', 'zoomEnd']);
 
 const loaded = ref(false);
 const previewLoaded = ref(false);
@@ -285,11 +287,11 @@ const onImageLoad = (type: 'main' | 'preview') => {
     if (type === 'preview') {
         previewLoaded.value = true;
         if (!loaded.value) {
-            emit('previewLoad');
+            displayingPreview.value = true;
         }
     } else {
         loaded.value = true;
-        emit('load')
+        displayingPreview.value = false;
     }
     console.log(type);
     onWindowResize();
