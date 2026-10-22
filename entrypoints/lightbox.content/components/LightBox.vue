@@ -282,7 +282,7 @@ const locate = () => {
 };
 
 const upload = async (uploadLink: UploadLink) => {
-    if (displayingPreview.value) {
+    if (displayingPreview.value[currentIdx]) {
         return;
     }
 
