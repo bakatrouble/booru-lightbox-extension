@@ -25,9 +25,6 @@ dependencies:
   pinia:
     specifier: ^4.1.0
     version: 4.1.0(@vue/devtools-api@8.2.1)(typescript-native-bridge@6.0.3-bridge.19.tsgo.7.0.2)(vue@3.5.44)
-  portal-vue:
-    specifier: ^3.0.0
-    version: 3.0.0(vue@3.5.44)
   qs:
     specifier: ^6.16.1
     version: 6.16.1
@@ -4024,18 +4021,6 @@ packages:
     dependencies:
       playwright-core: 1.64.1
     dev: true
-
-  /portal-vue@3.0.0(vue@3.5.44):
-    resolution: {integrity: sha512-9eprMxNURLx6ijbcgkWjYNcTWJYu/H8QF8nyAeBzOmk9lKCea01BW1hYBeLkgz+AestmPOvznAEOFmNuO4Adjw==}
-    engines: {node: '>=14.19'}
-    peerDependencies:
-      vue: ^3.0.4
-    peerDependenciesMeta:
-      vue:
-        optional: true
-    dependencies:
-      vue: 3.5.44(typescript-native-bridge@6.0.3-bridge.19.tsgo.7.0.2)
-    dev: false
 
   /postcss@8.5.31:
     resolution: {integrity: sha512-YUbWYCgErwnMAVkjUnYa+KlMBzGpHwiIt/DE7f0G33AuX2LH9UcTk6KgWxd3zRU+pN3u/C+Xl3EnMLM4Hea7Sg==}

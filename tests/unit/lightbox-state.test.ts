@@ -1,7 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { GesturePlugin } from '@vueuse/gesture';
 import { createPinia, setActivePinia } from 'pinia';
-import PortalVue from 'portal-vue';
 import { describe, expect, it, type Mock, vi } from 'vitest';
 import { nextTick } from 'vue';
 import LightBox from '~lightbox/components/LightBox.vue';
@@ -52,7 +51,7 @@ const mountViewer = () => {
     const wrapper = mount(LightBox as any, {
         attachTo: document.body,
         global: {
-            plugins: [pinia, PortalVue, GesturePlugin],
+            plugins: [pinia, GesturePlugin],
             stubs: { mdicon: true },
             provide: { locate: () => {} },
         },

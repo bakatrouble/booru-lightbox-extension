@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useDebounce } from '@vueuse/core';
 import { ref, watch } from 'vue';
 import LoadingPlaceholder from '~lightbox/components/LoadingPlaceholder.vue';
 import VideoPlayer from '~lightbox/components/VideoPlayer.vue';
@@ -12,7 +11,9 @@ const { media, current, index } = defineProps<{
     index: number;
 }>();
 
-const displayingPreview = defineModel<boolean>('displayingPreview');
+const displayingPreview = defineModel<boolean>('displayingPreview', {
+    default: true,
+});
 
 const emit = defineEmits(['zoomStart', 'zoomEnd']);
 
@@ -87,6 +88,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
         y: videoHeight || 0,
     };
     loaded.value = true;
+    displayingPreview.value = false;
     onWindowResize();
 };
 </script>

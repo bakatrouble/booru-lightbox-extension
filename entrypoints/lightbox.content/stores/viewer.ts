@@ -10,6 +10,11 @@ export const useViewerStore = defineStore('viewer', () => {
     const imageList = ref<MediaListItem[]>([]);
     const currentIdx = ref(0);
     const show = ref(false);
+
+    // Anchor for the video toolbar Teleport. It must be the element itself,
+    // not a selector: the app lives in a shadow root, which
+    // document.querySelector cannot pierce. Set by LightBox on mount.
+    const toolbarTarget = ref<HTMLElement>();
     const mod = ref<CollectImagesOptions | null>(null);
     const noAnimations = ref(false);
 
@@ -76,5 +81,6 @@ export const useViewerStore = defineStore('viewer', () => {
         show,
         slideBy,
         slideTo,
+        toolbarTarget,
     };
 });

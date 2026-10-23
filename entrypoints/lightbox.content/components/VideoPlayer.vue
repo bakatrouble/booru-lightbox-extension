@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useLocalStorage, useMediaControls } from '@vueuse/core';
-import { Portal } from 'portal-vue';
+import { useFullscreen } from '@vueuse/core';
 import type { HTMLAttributes } from 'vue';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import Btn from '~lightbox/atoms/Btn.vue';
 import Panel from '~lightbox/atoms/Panel.vue';
 import Slider from '~lightbox/atoms/Slider.vue';
-import { useDebounceFnStoppable } from '~lightbox/composables/useDebounceFnStoppable';
-import { formatDuration } from '~lightbox/utils';
+import { useVideoPlayback } from '~lightbox/composables/useVideoPlayback';
+import { useVideoToolbar } from '~lightbox/composables/useVideoToolbar';
+import { useViewerStore } from '~lightbox/stores/viewer';
 
 interface VideoPlayerProps extends /* @vue-ignore */ HTMLAttributes {
     panning: boolean;
@@ -23,91 +23,41 @@ const {
 
 const emit = defineEmits(['loadedMetadata']);
 
+const viewer = useViewerStore();
+
 const loaded = ref(false);
-const toolbar = ref(true);
-const blurToolbar = ref(true);
-const toolbarLock = ref(false);
-const mouseDownLocation = ref<Vector2>({ x: 0, y: 0 });
-
-const video = ref<HTMLVideoElement>();
+const videoContainer = ref<HTMLElement>();
+const fullscreenToolbarTarget = ref<HTMLElement>();
 const {
-    volume: videoVolume,
-    muted: videoMuted,
-    currentTime,
+    isFullscreen,
+    isSupported: isFullscreenSupported,
+    toggle: fullscreenToggle,
+} = useFullscreen(videoContainer);
+
+const {
+    video,
     playing,
+    currentTime,
     duration,
-    buffered,
-} = useMediaControls(video);
-const volume = useLocalStorage(`lightbox.volume`, 1, { mergeDefaults: true });
-const muted = useLocalStorage(`lightbox.muted`, false, { mergeDefaults: true });
+    volume,
+    muted,
+    formattedTime,
+    formattedLength,
+    bufferedSegments,
+    togglePlay,
+    pause,
+    onPressStart: onMouseDown,
+    onPressEnd: onMouseUp,
+} = useVideoPlayback();
 
-const formattedTime = computed(() => formatDuration(currentTime.value));
-const formattedLength = computed(() => formatDuration(duration.value));
-const bufferedSegments = computed(() =>
-    buffered.value.map((segment) => ({
-        start: segment[0],
-        end: segment[1],
-    })),
-);
-
-watch(volume, (volume) => (videoVolume.value = volume), { immediate: true });
-watch(muted, (muted) => (videoMuted.value = muted), { immediate: true });
-
-const hideToolbar = useDebounceFnStoppable(() => {
-    if (!toolbarLock.value) {
-        toolbar.value = false;
-    }
-}, 300);
-
-const onKeyDown = (e: KeyboardEvent) => {
-    if (!isCurrent) return;
-    if (e.code === 'Space') {
-        e.preventDefault();
-        playing.value = !playing.value;
-    }
-};
-
-onMounted(() => {
-    hideToolbar();
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.documentElement.addEventListener('mouseleave', hideToolbar);
-});
-
-onUnmounted(() => {
-    hideToolbar.cancel();
-    document.removeEventListener('keydown', onKeyDown);
-    document.removeEventListener('mousemove', onMouseMove);
-    document.documentElement.removeEventListener('mouseleave', hideToolbar);
+const { toolbar, blurToolbar, toolbarLock, hideToolbar } = useVideoToolbar({
+    isCurrent: () => isCurrent,
+    onTogglePlay: togglePlay,
 });
 
 const onLoadedMetadata = () => {
     loaded.value = true;
     emit('loadedMetadata', video.value!.videoWidth, video.value!.videoHeight);
-};
-
-const onMouseMove = () => {
-    if (!isCurrent) return;
-    toolbar.value = true;
-    blurToolbar.value = false;
-    window.requestAnimationFrame(() => (blurToolbar.value = true));
-    hideToolbar();
-};
-
-const onMouseDown = (e: MouseEvent) => {
-    mouseDownLocation.value = {
-        x: e.clientX,
-        y: e.clientY,
-    };
-};
-
-const onMouseUp = (e: MouseEvent) => {
-    if (
-        mouseDownLocation.value.x === e.clientX &&
-        mouseDownLocation.value.y === e.clientY
-    ) {
-        playing.value = !playing.value;
-    }
 };
 
 watch(
@@ -120,13 +70,14 @@ watch(
 );
 
 defineExpose({
-    pause: () => (playing.value = false),
+    pause,
 });
 </script>
 
 <template>
     <div
         v-bind="props"
+        ref="videoContainer"
         :class="['group', className]"
         :data-panning="panning"
         :data-paused="!playing"
@@ -148,7 +99,12 @@ defineExpose({
             <btn icon="play" class="play-btn" />
         </div>
 
-        <portal to="video-toolbar" :disabled="!isCurrent || !loaded">
+        <div ref="fullscreenToolbarTarget" />
+
+        <Teleport
+            :to="isFullscreen ? fullscreenToolbarTarget : viewer.toolbarTarget"
+            :disabled="!isCurrent || !loaded || !viewer.toolbarTarget"
+        >
             <div class="absolute bottom-5 left-0 right-0 flex flex-row justify-center items-center">
                 <panel
                     class="video-toolbar w-1/2 blur-out transition-opacity-interactive!"
@@ -178,19 +134,20 @@ defineExpose({
                     <span class="mx-4">{{ formattedTime }}</span>
                     <slider
                         :model-value="currentTime"
-                        class="progress-slider flex-grow-1"
+                        class="progress-slider grow"
                         :max="duration"
                         :buffers="bufferedSegments"
                         @update:model-value="currentTime = $event!"
                     />
                     <span class="mx-4">{{ formattedLength }}</span>
                     <btn
-                        @click="video!.requestFullscreen()"
+                        v-if="isFullscreenSupported"
+                        @click="fullscreenToggle()"
                         icon="fullscreen"
                     />
                 </panel>
             </div>
-        </portal>
+        </Teleport>
     </div>
 </template>
 

@@ -39,7 +39,7 @@ export default defineConfig({
         css: false,
         server: {
             deps: {
-                inline: [/@vueuse/, /portal-vue/, /mdi-vue/],
+                inline: [/@vueuse/, /mdi-vue/],
             },
         },
     },

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { FullGestureState } from '@vueuse/gesture';
 import Timeout from 'await-timeout';
-import { PortalTarget } from 'portal-vue';
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import Btn from '~lightbox/atoms/Btn.vue';
 import Panel from '~lightbox/atoms/Panel.vue';
 import Spinner from '~lightbox/atoms/Spinner.vue';
@@ -21,6 +20,7 @@ const uploadStore = useUploadStore();
 const locateStore = useLocateStore();
 
 const $el = ref<HTMLElement>();
+const toolbarTarget = ref<HTMLElement>();
 const dragging = ref(false);
 const pinching = ref(false);
 const exitDirection = ref<'up' | 'down' | null>(null);
@@ -57,6 +57,7 @@ useKeyboardNavigation({
 });
 
 onMounted(() => {
+    viewer.toolbarTarget = toolbarTarget.value;
     uploadStore.fetchLinks();
 });
 
@@ -236,7 +237,7 @@ const locate = () => {
                 icon-size="30"
             />
         </button>
-        <portal-target name="video-toolbar" />
+        <div ref="toolbarTarget" class="video-toolbar-target" />
     </div>
 </template>
 

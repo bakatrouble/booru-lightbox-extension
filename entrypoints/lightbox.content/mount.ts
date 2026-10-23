@@ -16,7 +16,6 @@ import {
 import { GesturePlugin } from '@vueuse/gesture';
 import mdiVue from 'mdi-vue/v3';
 import { createPinia } from 'pinia';
-import PortalVue from 'portal-vue';
 import { createApp } from 'vue';
 import styles from '~/assets/tailwind.css?inline';
 import Primary from '~lightbox/App.vue';
@@ -32,7 +31,6 @@ export const mountApp = (
     const pinia = createPinia();
     const app = createApp(Primary, { mod })
         .use(pinia)
-        .use(PortalVue)
         .use(GesturePlugin)
         .use(mdiVue, {
             icons: {

@@ -98,7 +98,9 @@ class ManifestCommand extends Command {
                     this.spinner.success(`Version ${version} found!`);
                     this.spinner.start('Downloading xpi...');
 
-                    const xpi = await this.client.get(v.file.url).arrayBuffer();
+                    const xpi = await this.client
+                        .get(v.file.url, { prefix: '' })
+                        .arrayBuffer();
                     const xpiName = path.basename(v.file.url);
 
                     const updateManifest = (await ky
