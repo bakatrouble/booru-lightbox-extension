@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, type WxtViteConfig } from 'wxt';
 
 export const updateManifestUrl =
-    'https://raw.githubusercontent.com/bakatrouble/booru-lightbox-extension/refs/heads/manifest';
+    'https://bakatrouble.github.io/booru-lightbox-extension';
 export const extensionSlug = 'booru@bakatrouble.me';
 
 export default defineConfig({
