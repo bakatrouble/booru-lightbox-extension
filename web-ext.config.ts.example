@@ -1,0 +1,27 @@
+import { defineWebExtConfig } from 'wxt';
+
+// Local-only `web-ext` launch config. Copy to `web-ext.config.ts` (gitignored)
+// and adjust to your machine:
+//
+//   cp web-ext.config.ts.example web-ext.config.ts
+//
+// Every field can be overridden via environment variable; the values below
+// are the defaults used when the variable is unset.
+export default defineWebExtConfig({
+    binaries: {
+        // Path or name of the Firefox binary, e.g. 'firefox',
+        // 'firefox-developer-edition', or '/usr/bin/firefox'.
+        firefox:
+            process.env.WEB_EXT_FIREFOX_BINARY ??
+            'firefox-developer-edition',
+    },
+    startUrls: process.env.WEB_EXT_START_URLS?.split(',').map((s) =>
+        s.trim(),
+    ).filter(Boolean) ?? [
+        'about:debugging#/runtime/this-firefox',
+        'https://e926.net/posts?tags=fox',
+    ],
+    firefoxProfile:
+        process.env.WEB_EXT_FIREFOX_PROFILE ?? 'booru-lightbox-test',
+    keepProfileChanges: true,
+});
