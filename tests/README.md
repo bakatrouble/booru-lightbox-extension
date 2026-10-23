@@ -65,10 +65,11 @@ adapter's `callback()` and resolving items via `resolveScalarOrFunction`.
   `harness.css` points Tailwind's scanner at `entrypoints/` — without it,
   viewer utility classes are never generated and the hidden overlay
   intercepts clicks.
-- `specs/viewer.spec.ts` — open on click, image render, arrow navigation,
+- `specs/viewer.spec.ts` — open on click, viewer z-index contract (100000000,
+  one below the uploader's notifications), image render, arrow navigation,
   Escape close + hash clear, `#slide=` deep link, close button, fresh-open
-  drag navigation, zoom recovery across close/reopen (1.3 guard), and a
-  `test.fail()` pin for SlideContent console noise (1.8).
+  drag navigation, zoom recovery across close/reopen (1.3 guard), and the
+  console-noise guard (1.8).
 
 `playwright.config.ts` serves the harness on port 5199 (5173 was taken by
 another project on this machine).

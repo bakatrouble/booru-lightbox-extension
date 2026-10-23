@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     DIMENSION_SUM_CAP,
     fitDimensionSum,
-    renderSlideToJpeg,
+    renderSlideToBytes,
 } from '~lightbox/imageEncoder';
 
 describe('fitDimensionSum', () => {
@@ -39,7 +39,7 @@ describe('fitDimensionSum', () => {
     });
 });
 
-describe('renderSlideToJpeg fallback', () => {
+describe('renderSlideToBytes fallback', () => {
     it('renders synchronously where workers are unavailable (jsdom)', async () => {
         expect(typeof Worker).toBe('undefined');
         const proto = HTMLCanvasElement.prototype as unknown as Record<
@@ -47,21 +47,22 @@ describe('renderSlideToJpeg fallback', () => {
             unknown
         >;
         const origGetContext = proto.getContext;
-        const origToDataURL = proto.toDataURL;
+        const origToBlob = proto.toBlob;
         proto.getContext = () => ({
             drawImage: () => {},
             fill: () => {},
             rect: () => {},
         });
-        proto.toDataURL = () => 'data:image/jpeg;base64,AAA';
+        proto.toBlob = (cb: (blob: Blob | null) => void) =>
+            cb(new Blob(['fake-jpeg-bytes'], { type: 'image/jpeg' }));
         try {
             const el = document.createElement('img');
-            await expect(renderSlideToJpeg(el)).resolves.toBe(
-                'data:image/jpeg;base64,AAA',
-            );
+            const bytes = await renderSlideToBytes(el);
+            expect(bytes).toBeInstanceOf(ArrayBuffer);
+            expect(bytes.byteLength).toBeGreaterThan(0);
         } finally {
             proto.getContext = origGetContext;
-            proto.toDataURL = origToDataURL;
+            proto.toBlob = origToBlob;
         }
     });
 });

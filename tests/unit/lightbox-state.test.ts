@@ -92,18 +92,20 @@ const mockCanvas = () => {
     const drawImage = vi.fn();
     const proto = HTMLCanvasElement.prototype as any;
     const origGetContext = proto.getContext;
-    const origToDataURL = proto.toDataURL;
+    const origToBlob = proto.toBlob;
     proto.getContext = vi.fn(() => ({
         rect: vi.fn(),
         fill: vi.fn(),
         drawImage,
     }));
-    proto.toDataURL = vi.fn(() => 'data:image/jpeg;base64,AAA');
+    proto.toBlob = vi.fn((cb: (blob: Blob | null) => void) =>
+        cb(new Blob(['fake-jpeg-bytes'], { type: 'image/jpeg' })),
+    );
     return {
         drawImage,
         restore: () => {
             proto.getContext = origGetContext;
-            proto.toDataURL = origToDataURL;
+            proto.toBlob = origToBlob;
         },
     };
 };
@@ -200,6 +202,12 @@ describe('Track 1 viewer-state pins', () => {
                 | HTMLImageElement
                 | undefined;
             expect(drawn?.getAttribute('src')).toBe(FULL_SRC);
+            // sent as raw bytes, not a base64 data URL (`sent` is `any`,
+            // so direct access is fine — the assertions fail on undefined)
+            const sent = uploadCalls()[0]![1] as any;
+            expect(sent.method).toBe('photoArrayBuffer');
+            expect(sent.data).toBeInstanceOf(ArrayBuffer);
+            expect(sent.data.byteLength).toBeGreaterThan(0);
         } finally {
             canvas.restore();
             wrapper.unmount();

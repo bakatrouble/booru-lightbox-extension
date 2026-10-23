@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
-import { renderSlideToJpeg } from '~lightbox/imageEncoder';
+import { renderSlideToBytes } from '~lightbox/imageEncoder';
 import { MediaType } from '~lightbox/mediaType';
 import { useMediaStore } from '~lightbox/stores/media';
 import { useViewerStore } from '~lightbox/stores/viewer';
@@ -105,14 +105,16 @@ export const useUploadStore = defineStore('upload', () => {
         }
 
         // Worker-encoded off the main thread with the dimension-sum cap;
-        // falls back to synchronous rendering where workers are unavailable.
-        const dataUrl = await renderSlideToJpeg(el);
+        // falls back to canvas rendering where workers are unavailable.
+        // Sent as raw bytes: the uploader accepts photoArrayBuffer, which
+        // skips the base64 inflate/deflate round-trip on both sides.
+        const data = await renderSlideToBytes(el);
 
         await browser.runtime.sendMessage('uploader@bakatrouble.me', {
             type: 'upload',
-            method: 'photoBase64',
+            method: 'photoArrayBuffer',
             endpoint: uploadLink.url,
-            data: dataUrl,
+            data,
         });
     };
 

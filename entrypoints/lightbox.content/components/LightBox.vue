@@ -246,8 +246,14 @@ const locate = () => {
 
 @layer components {
     .lightbox {
+        /* Do not use var() here, with or without a fallback: the build
+           leaves `var(--base-z-index)` as-is, and `:root` custom properties
+           do not apply inside shadow DOM, so the z-index would collapse to
+           `auto` and paint order would decide stacking. Hardcoded to match
+           the uploader's notifications contract (viewer 100000000,
+           notifications exactly one above). */
+        z-index: 100000000;
         @apply
-            z-(--base-z-index)
             fixed
             top-0
             left-0

@@ -27,12 +27,24 @@ export const fitDimensionSum = (
     };
 };
 
-const blobToDataUrl = (blob: Blob): Promise<string> =>
+const canvasToBytes = (canvas: HTMLCanvasElement): Promise<ArrayBuffer> =>
     new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
+        // toBlob encodes asynchronously (unlike toDataURL), so even the
+        // fallback path keeps JPEG encoding off the main thread.
+        canvas.toBlob(
+            async (blob) => {
+                try {
+                    if (!blob) {
+                        throw new Error('canvas encoding failed');
+                    }
+                    resolve(await blob.arrayBuffer());
+                } catch (error) {
+                    reject(error);
+                }
+            },
+            'image/jpeg',
+            1,
+        );
     });
 
 const renderInWorker = (
@@ -63,11 +75,11 @@ const renderInWorker = (
         worker.postMessage({ bitmap, width, height }, [bitmap]);
     });
 
-const renderLegacy = (
+const renderLegacy = async (
     el: HTMLImageElement,
     width: number,
     height: number,
-): string => {
+): Promise<ArrayBuffer> => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -76,14 +88,14 @@ const renderLegacy = (
     ctx.fillStyle = 'white';
     ctx.fill();
     ctx.drawImage(el, 0, 0, width, height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 1);
+    const bytes = await canvasToBytes(canvas);
     canvas.remove();
-    return dataUrl;
+    return bytes;
 };
 
-export const renderSlideToJpeg = async (
+export const renderSlideToBytes = async (
     el: HTMLImageElement,
-): Promise<string> => {
+): Promise<ArrayBuffer> => {
     const { width, height } = fitDimensionSum(
         el.naturalWidth,
         el.naturalHeight,
@@ -96,8 +108,7 @@ export const renderSlideToJpeg = async (
             throw new Error('worker encoding unsupported');
         }
         const bitmap = await createImageBitmap(el);
-        const buffer = await renderInWorker(bitmap, width, height);
-        return await blobToDataUrl(new Blob([buffer], { type: 'image/jpeg' }));
+        return await renderInWorker(bitmap, width, height);
     } catch {
         return renderLegacy(el, width, height);
     }

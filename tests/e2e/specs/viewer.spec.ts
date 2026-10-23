@@ -14,6 +14,21 @@ test('clicking a thumbnail opens the viewer on that image', async ({
     await expect(page).toHaveURL(/#slide=1/);
 });
 
+test('the viewer stacks at the contracted z-index', async ({ page }) => {
+    // Contract with the uploader extension (see its notifications z-index
+    // test): viewer exactly 100000000, notifications exactly one above. A
+    // var()-based z-index collapses to auto inside shadow DOM, so this is
+    // pinned as a computed value, not a stylesheet string.
+    await page.locator('.thumb').first().click();
+    const lightbox = page.locator('.lightbox');
+    await expect(lightbox).toHaveAttribute('data-visible', 'true');
+    await expect
+        .poll(async () =>
+            lightbox.evaluate((el) => getComputedStyle(el).zIndex),
+        )
+        .toBe('100000000');
+});
+
 test('the opened slide renders its full-size image', async ({ page }) => {
     await page.locator('.thumb').first().click();
     const img = page.locator('.slide-0 img.image.main');
