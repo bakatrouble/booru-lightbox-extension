@@ -6,6 +6,7 @@ import { nextTick } from 'vue';
 import LightBox from '~lightbox/components/LightBox.vue';
 import { MediaType } from '~lightbox/mediaType';
 import { useMediaStore } from '~lightbox/stores/media';
+import { useUploadStore } from '~lightbox/stores/upload';
 import { useViewerStore } from '~lightbox/stores/viewer';
 import { stubBrowser } from './setup';
 
@@ -89,6 +90,21 @@ const uploadButton = ({ wrapper }: ViewerCtx) => {
 const uploadCalls = () =>
     sendMessage().mock.calls.filter((c) => (c[1] as any)?.type === 'upload');
 
+const noticeCalls = () =>
+    sendMessage().mock.calls.filter((c) =>
+        ['notification', 'remove-notification'].includes((c[1] as any)?.type),
+    );
+
+// jsdom never loads images by itself; dispatching `load` drives the
+// component handlers (and the fullLoaded flag the upload queue reads).
+const loadMainImage = async ({ wrapper }: ViewerCtx) => {
+    wrapper
+        .find('.slide-0 img.image.main')
+        .element.dispatchEvent(new Event('load'));
+    await nextTick();
+    await flushPromises();
+};
+
 const mockCanvas = () => {
     const drawImage = vi.fn();
     const proto = HTMLCanvasElement.prototype as any;
@@ -145,6 +161,7 @@ describe('Track 1 viewer-state pins', () => {
         const { wrapper } = ctx;
         try {
             await openViewer(ctx);
+            await loadMainImage(ctx);
             // control: hotkey works on a fresh open (validates the harness;
             // if THIS fails, the setup below it is meaningless)
             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'u' }));
@@ -175,6 +192,7 @@ describe('Track 1 viewer-state pins', () => {
         const { wrapper } = ctx;
         try {
             await openViewer(ctx);
+            await loadMainImage(ctx);
             // hold 'x', lose focus (its keyup goes to another app and never
             // arrives here), refocus, then press the hotkey
             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'x' }));
@@ -195,6 +213,7 @@ describe('Track 1 viewer-state pins', () => {
         const ctx = mountViewer();
         const { wrapper } = ctx;
         const media = useMediaStore(ctx.pinia);
+        const uploads = useUploadStore(ctx.pinia);
         try {
             await openViewer(ctx);
             const preview = wrapper.find('.slide-0 img.image.preview');
@@ -210,12 +229,20 @@ describe('Track 1 viewer-state pins', () => {
                 wrapper.find('.top-2.left-2 svg.progress-spinner').exists(),
             ).toBe(true);
 
-            // uploads are blocked while the preview shows
+            // uploads queue while the preview shows (one shared loading
+            // notice no matter how often it is requested)
+            await uploadButton(ctx).trigger('click');
             await uploadButton(ctx).trigger('click');
             await flushPromises();
             expect(uploadCalls()).toHaveLength(0);
+            const queued = noticeCalls();
+            expect(
+                queued.filter((c) => (c[1] as any)?.type === 'notification'),
+            ).toHaveLength(1);
+            expect((queued[0] as any)?.[1]?.options?.level).toBe('loading');
 
-            // full image arrives: indicator clears, uploads unblock
+            // full image arrives: notice removed first, then the two
+            // queued uploads send (one per earlier click)
             wrapper
                 .find('.slide-0 img.image.main')
                 .element.dispatchEvent(new Event('load'));
@@ -225,9 +252,48 @@ describe('Track 1 viewer-state pins', () => {
             expect(
                 wrapper.find('.top-2.left-2 svg.progress-spinner').exists(),
             ).toBe(false);
+            await new Promise((r) => setTimeout(r, 50));
+            expect(uploads.pendingUploads).toHaveLength(0);
+            expect(uploadCalls()).toHaveLength(2);
+            // the loading notice is removed before the requests send
+            expect(
+                noticeCalls().some(
+                    (c) => (c[1] as any)?.type === 'remove-notification',
+                ),
+            ).toBe(true);
+        } finally {
+            canvas.restore();
+            wrapper.unmount();
+        }
+    });
+
+    it('queues uploads until the full image arrives, with a loading notice', async () => {
+        const canvas = mockCanvas();
+        const ctx = mountViewer();
+        const { wrapper } = ctx;
+        const uploads = useUploadStore(ctx.pinia);
+        try {
+            await openViewer(ctx);
+            // nothing loaded yet: image data is unavailable
             await uploadButton(ctx).trigger('click');
             await flushPromises();
+            expect(uploadCalls()).toHaveLength(0);
+            expect(uploads.pendingUploads).toHaveLength(1);
+            expect(
+                noticeCalls().some(
+                    (c) => (c[1] as any)?.type === 'notification',
+                ),
+            ).toBe(true);
+
+            // full image arrives: notice removed first, then the upload sends
+            await loadMainImage(ctx);
             await new Promise((r) => setTimeout(r, 50));
+            expect(uploads.pendingUploads).toHaveLength(0);
+            expect(
+                noticeCalls().some(
+                    (c) => (c[1] as any)?.type === 'remove-notification',
+                ),
+            ).toBe(true);
             expect(uploadCalls()).toHaveLength(1);
         } finally {
             canvas.restore();
@@ -241,6 +307,7 @@ describe('Track 1 viewer-state pins', () => {
         const { wrapper } = ctx;
         try {
             await openViewer(ctx);
+            await loadMainImage(ctx);
             const uploadBtn = uploadButton(ctx);
             await uploadBtn.trigger('click');
             await flushPromises();

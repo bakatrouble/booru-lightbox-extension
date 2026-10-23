@@ -11,6 +11,10 @@ export const useMediaStore = defineStore('media', () => {
 
     const loadedImages = ref<(LoadedMediaListItem | false | undefined)[]>([]);
     const previewShown = ref<boolean[]>([]);
+    // Full-image data arrived per slide (set by SlideContent on main-image
+    // load). Unlike previewShown this is meaningful for items without a
+    // preview too; the upload queue reads it to decide queue-vs-send.
+    const fullLoaded = ref<boolean[]>([]);
 
     watch(
         () => viewer.imageList,
@@ -66,5 +70,5 @@ export const useMediaStore = defineStore('media', () => {
         return undefined;
     });
 
-    return { currentMedia, loadedImages, loadImages, previewShown };
+    return { currentMedia, fullLoaded, loadedImages, loadImages, previewShown };
 });

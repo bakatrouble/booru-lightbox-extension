@@ -4,12 +4,17 @@ import LoadingPlaceholder from '~lightbox/components/LoadingPlaceholder.vue';
 import VideoPlayer from '~lightbox/components/VideoPlayer.vue';
 import { useSlideViewport } from '~lightbox/composables/useSlideViewport';
 import { MediaType } from '~lightbox/mediaType';
+import { useMediaStore } from '~lightbox/stores/media';
+import { useUploadStore } from '~lightbox/stores/upload';
 
 const { media, current, index } = defineProps<{
     media: LoadedMediaListItem;
     current?: boolean;
     index: number;
 }>();
+
+const mediaStore = useMediaStore();
+const uploads = useUploadStore();
 
 const displayingPreview = defineModel<boolean>('displayingPreview', {
     default: false,
@@ -40,6 +45,11 @@ const {
 const image = ref<HTMLImageElement>();
 const preview = ref<HTMLImageElement>();
 const video = ref<typeof VideoPlayer>();
+const slideRoot = ref<HTMLElement>();
+
+// The store flag resets on mount: a remount starts unloaded even if the
+// previous mount of this index finished (cached images re-fire load).
+mediaStore.fullLoaded[index] = false;
 
 watch(loaded, (isLoaded) => {
     if (isLoaded) {
@@ -76,7 +86,11 @@ const onImageLoad = (type: 'main' | 'preview') => {
         }
     } else {
         loaded.value = true;
+        mediaStore.fullLoaded[index] = true;
         displayingPreview.value = false;
+        // A queued upload waits exactly for this moment: dismiss its
+        // loading notice, then send.
+        uploads.flushPending(index, slideRoot.value);
     }
     onWindowResize();
 };
@@ -94,7 +108,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
 </script>
 
 <template>
-    <div :class="`slide-${index}`">
+    <div :class="`slide-${index}`" ref="slideRoot">
         <loading-placeholder v-if="!(loaded || previewLoaded)">
             Loading media...
         </loading-placeholder>

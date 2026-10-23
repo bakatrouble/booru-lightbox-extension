@@ -19,8 +19,10 @@
 - `lightbox-state.test.ts` — Track 1 interaction pins via `@vue/test-utils`
   (real `LightBox` + `SlideContent`, stubbed icons, Pinia seeded directly —
   `LightBox` takes no props since the store migration): held-keys leak (1.4),
-  preview-instead-of-full upload (1.5), scroll-blocker leak (1.2). Each is
-  `it.fails` until its fix lands.
+  preview-instead-of-full upload (1.5), scroll-blocker leak (1.2),
+  preview-phase indicator + upload queueing (spinner, shared loading
+  notice, flush on full-image load), queue-until-loaded with
+  notice-remove-before-send.
 - `console-noise.test.ts` — Track 1.8 guards (background CSP rewrite, Slider
   drag, Locate render emit no `console.log`).
 - `setup.ts` — stubs the `browser` WebExtension global (storage, runtime,
