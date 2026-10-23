@@ -1,0 +1,56 @@
+name: Release pushed XPI
+
+# updateManifest.ts pushes one commit per published version (manifest.json +
+# the new .xpi). This workflow attaches that XPI to a GitHub release named
+# after the version, so every published build is downloadable from Releases.
+# Re-runs and re-pushes are safe: existing releases are reused and the asset
+# is re-uploaded with --clobber.
+
+on:
+  push:
+    branches: [manifest]
+    paths: ['*.xpi']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Release XPIs changed in this push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          files=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- '*.xpi')
+          if [ -z "$files" ]; then
+            echo 'No XPI changed in this push, nothing to do.'
+            exit 0
+          fi
+          echo "$files" | while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            version=$(basename "$file" | sed -n 's/.*-\([0-9][0-9A-Za-z.\-]*\)\.xpi$/\1/p')
+            if [ -z "$version" ]; then
+              echo "::warning::Cannot parse version from $file, skipping."
+              continue
+            fi
+            link=$(jq -r --arg v "$version" \
+              '.addons[].updates[] | select(.version == $v) | .update_link' \
+              manifest.json)
+            notes="Signed Firefox build v$version."
+            if [ -n "$link" ] && [ "$link" != 'null' ]; then
+              notes="$notes"$'\n\n'"Update link: $link"
+            fi
+            if gh release view "$version" >/dev/null 2>&1; then
+              echo "Release $version exists, re-uploading $file."
+            else
+              echo "Creating release $version with $file."
+              gh release create "$version" --title "$version" --notes "$notes"
+            fi
+            gh release upload "$version" "$file" --clobber
+          done
