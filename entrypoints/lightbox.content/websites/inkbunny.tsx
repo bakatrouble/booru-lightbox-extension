@@ -1,5 +1,5 @@
-import ky from 'ky';
 import { MediaType } from '~lightbox/mediaType';
+import { fetchDocument } from '~lightbox/websites/_helpers.ts';
 
 const inkbunnyCollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
@@ -9,10 +9,8 @@ const inkbunnyCollectImages: CollectImagesOptions = {
             el: el as HTMLElement,
             item: {
                 src: async () => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(
-                        await ky.get((el as HTMLAnchorElement).href).text(),
-                        'text/html',
+                    const doc = await fetchDocument(
+                        (el as HTMLAnchorElement).href,
                     );
                     return (
                         doc.querySelector(

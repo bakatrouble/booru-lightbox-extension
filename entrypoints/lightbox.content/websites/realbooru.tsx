@@ -1,5 +1,5 @@
-import ky from 'ky';
 import { MediaType } from '~lightbox/mediaType';
+import { fetchDocument } from '~lightbox/websites/_helpers.ts';
 
 export const realBooruCollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
@@ -7,10 +7,8 @@ export const realBooruCollectImages: CollectImagesOptions = {
             (el) => ({
                 el: el as HTMLElement,
                 item: async () => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(
-                        await ky.get((el as HTMLAnchorElement).href).text(),
-                        'text/html',
+                    const doc = await fetchDocument(
+                        (el as HTMLAnchorElement).href,
                     );
                     const mediaImage = doc.querySelector(
                         '#image',
