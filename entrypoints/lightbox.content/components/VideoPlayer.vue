@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import { useLocalStorage, useMediaControls } from '@vueuse/core';
 import { Portal } from 'portal-vue';
-import { HTMLAttributes, ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import Btn from '@/entrypoints/lightbox.content/atoms/Btn.vue';
-import Panel from '@/entrypoints/lightbox.content/atoms/Panel.vue';
-import Slider from '@/entrypoints/lightbox.content/atoms/Slider.vue';
-import { useDebounceFnStoppable } from '@/entrypoints/lightbox.content/composables/useDebounceFnStoppable';
-import { formatDuration } from '../utils';
-import { useLocalStorage, useMediaControls } from "@vueuse/core";
+import type { HTMLAttributes } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import Btn from '~lightbox/atoms/Btn.vue';
+import Panel from '~lightbox/atoms/Panel.vue';
+import Slider from '~lightbox/atoms/Slider.vue';
+import { useDebounceFnStoppable } from '~lightbox/composables/useDebounceFnStoppable';
+import { formatDuration } from '~lightbox/utils';
 
 interface VideoPlayerProps extends /* @vue-ignore */ HTMLAttributes {
     panning: boolean;
@@ -29,7 +30,14 @@ const toolbarLock = ref(false);
 const mouseDownLocation = ref<Vector2>({ x: 0, y: 0 });
 
 const video = ref<HTMLVideoElement>();
-const { volume: videoVolume, muted: videoMuted, currentTime, playing, duration, buffered } = useMediaControls(video);
+const {
+    volume: videoVolume,
+    muted: videoMuted,
+    currentTime,
+    playing,
+    duration,
+    buffered,
+} = useMediaControls(video);
 const volume = useLocalStorage(`lightbox.volume`, 1, { mergeDefaults: true });
 const muted = useLocalStorage(`lightbox.muted`, false, { mergeDefaults: true });
 
@@ -42,8 +50,8 @@ const bufferedSegments = computed(() =>
     })),
 );
 
-watch(volume, volume => videoVolume.value = volume, { immediate: true });
-watch(muted, muted => videoMuted.value = muted, { immediate: true });
+watch(volume, (volume) => (videoVolume.value = volume), { immediate: true });
+watch(muted, (muted) => (videoMuted.value = muted), { immediate: true });
 
 const hideToolbar = useDebounceFnStoppable(() => {
     if (!toolbarLock.value) {
@@ -57,7 +65,7 @@ const onKeyDown = (e: KeyboardEvent) => {
         e.preventDefault();
         playing.value = !playing.value;
     }
-}
+};
 
 onMounted(() => {
     hideToolbar();
@@ -98,7 +106,7 @@ const onMouseUp = (e: MouseEvent) => {
         mouseDownLocation.value.x === e.clientX &&
         mouseDownLocation.value.y === e.clientY
     ) {
-        playing.value = !playing.value;;
+        playing.value = !playing.value;
     }
 };
 
@@ -112,7 +120,7 @@ watch(
 );
 
 defineExpose({
-    pause: () => playing.value = false,
+    pause: () => (playing.value = false),
 });
 </script>
 
@@ -192,7 +200,7 @@ defineExpose({
 </template>
 
 <style scoped lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .video {

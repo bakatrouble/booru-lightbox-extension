@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Spinner from "@/entrypoints/lightbox.content/atoms/Spinner.vue";
+import Spinner from '~lightbox/atoms/Spinner.vue';
 </script>
 
 <template>

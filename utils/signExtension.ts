@@ -5,12 +5,12 @@ import jwt from 'jwt-simple';
 import ky, { HTTPError } from 'ky';
 import shellJS from 'shelljs';
 import yoctoSpinner from 'yocto-spinner';
-import packageJson from '../package.json';
-import { extensionSlug } from '../wxt.config';
+import packageJson from '~/package.json';
+import { extensionSlug } from '~/wxt.config';
 import 'dotenv/config';
 
 const getAuth = (key: string, secret: string) => {
-    const issueTime = Math.floor(+new Date() / 1000);
+    const issueTime = Math.floor(Date.now() / 1000);
     return jwt.encode(
         {
             iss: key,
@@ -73,11 +73,11 @@ class SignCommand extends Command {
 
     get client() {
         return ky.extend({
-            prefixUrl: 'https://addons.mozilla.org/api/v5/addons',
+            prefix: 'https://addons.mozilla.org/api/v5/addons',
             hooks: {
                 beforeRequest: [
-                    (req) => {
-                        req.headers.set(
+                    ({ request }) => {
+                        request.headers.set(
                             'authorization',
                             `JWT ${getAuth(this.amoKey!, this.amoSecret!)}`,
                         );

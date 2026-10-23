@@ -1,7 +1,13 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import {mdiArrowDown, mdiArrowUp, mdiClose, mdiKeyboard, mdiPlus} from "@mdi/js";
+import {
+    mdiArrowDown,
+    mdiArrowUp,
+    mdiClose,
+    mdiKeyboard,
+    mdiPlus,
+} from '@mdi/js';
 import mdiVue from 'mdi-vue/v3';
+import { createApp } from 'vue';
+import App from '~options/App.vue';
 
 createApp(App)
     .use(mdiVue, {
@@ -13,4 +19,4 @@ createApp(App)
             mdiKeyboard,
         },
     })
-    .mount("#app");
+    .mount('#app');

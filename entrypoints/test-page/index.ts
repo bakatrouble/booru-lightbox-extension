@@ -1,4 +1,5 @@
-import { MediaType, mountApp } from '@/entrypoints/lightbox.content';
+import { MediaType } from '~lightbox/mediaType';
+import { mountApp } from '~lightbox/mount';
 
 mountApp(
     {

@@ -1,0 +1,6 @@
+@import '~/assets/tailwind.css';
+
+/* The harness root is tests/e2e/harness, but the viewer's Tailwind classes
+   live in entrypoints/. Point the scanner at both. */
+@source '../../../entrypoints';
+@source '.';

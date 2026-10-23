@@ -1,0 +1,30 @@
+# Git hooks managed by prek (https://github.com/j178/prek),
+# a drop-in pre-commit replacement. Install the shims after cloning:
+#   prek install
+repos:
+    - repo: local
+      hooks:
+          - id: biome
+            name: biome check
+            entry: pnpm exec biome check --write --no-errors-on-unmatched
+            language: system
+            stages: [pre-commit]
+            # No `files` filter here on purpose: biome.jsonc is the single
+            # source of truth for what gets checked (it skips lockfiles,
+            # Tailwind v4 CSS it cannot parse yet, and fixture data).
+            # --write may modify staged files; prek then fails the run so the
+            # fixes can be reviewed and re-staged.
+          - id: typecheck
+            name: tsc --noEmit
+            entry: pnpm run typecheck
+            language: system
+            stages: [pre-commit]
+            files: \.(ts|tsx|vue|js|mts|cts|json|jsonc)$
+            pass_filenames: false
+          - id: unit-tests
+            name: vitest run
+            entry: pnpm run test:unit
+            language: system
+            stages: [pre-commit]
+            files: \.(ts|tsx|vue|js|mts|cts|json|jsonc)$
+            pass_filenames: false

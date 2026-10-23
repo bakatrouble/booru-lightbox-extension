@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HTMLAttributes } from 'vue';
+import type { HTMLAttributes } from 'vue';
 
 interface PanelProps extends /* @vue-ignore */ HTMLAttributes {}
 
@@ -13,7 +13,7 @@ const props = defineProps<PanelProps>();
 </template>
 
 <style lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .panel {

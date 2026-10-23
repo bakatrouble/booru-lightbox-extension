@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FullGestureState } from '@vueuse/gesture';
+import type { FullGestureState } from '@vueuse/gesture';
 import Timeout from 'await-timeout';
 import { PortalTarget } from 'portal-vue';
 import {
@@ -11,13 +11,13 @@ import {
     ref,
     watch,
 } from 'vue';
-import Panel from '@/entrypoints/lightbox.content/atoms/Panel.vue';
-import { MediaType } from '../../lightbox.content';
-import Btn from '../atoms/Btn.vue';
-import { resolveScalarOrFunction } from '../utils';
-import LoadingPlaceholder from './LoadingPlaceholder.vue';
-import SlideContent from './SlideContent.vue';
-import Spinner from "@/entrypoints/lightbox.content/atoms/Spinner.vue";
+import Btn from '~lightbox/atoms/Btn.vue';
+import Panel from '~lightbox/atoms/Panel.vue';
+import Spinner from '~lightbox/atoms/Spinner.vue';
+import LoadingPlaceholder from '~lightbox/components/LoadingPlaceholder.vue';
+import SlideContent from '~lightbox/components/SlideContent.vue';
+import { MediaType } from '~lightbox/mediaType';
+import { resolveScalarOrFunction } from '~lightbox/utils';
 
 const { show, currentIdx, imageList, collectImagesModule } = defineProps<{
     show: boolean;
@@ -443,7 +443,7 @@ const uploadVideo = async (uploadLink: UploadLink) => {
 </template>
 
 <style scoped lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .lightbox {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, watch, reactive } from 'vue';
-import { useDebounce, useWindowSize, useImage } from '@vueuse/core';
-import { FullGestureState } from '@vueuse/gesture';
-import { MediaType } from '..';
-import LoadingPlaceholder from './LoadingPlaceholder.vue';
-import VideoPlayer from './VideoPlayer.vue';
+import { useDebounce, useImage, useWindowSize } from '@vueuse/core';
+import type { FullGestureState } from '@vueuse/gesture';
+import { reactive, ref, watch } from 'vue';
+import LoadingPlaceholder from '~lightbox/components/LoadingPlaceholder.vue';
+import VideoPlayer from '~lightbox/components/VideoPlayer.vue';
+import { MediaType } from '~lightbox/mediaType';
 
 const { media, current, sliding, index } = defineProps<{
     media: LoadedMediaListItem;
@@ -106,18 +106,14 @@ const dragHandler = ({
             if (scaledImageWidth > windowSize.width.value) {
                 if (position.value.x > 0) {
                     position.value.x = 0;
-                } else if (
-                    imageRight < windowSize.width.value
-                ) {
+                } else if (imageRight < windowSize.width.value) {
                     position.value.x =
                         windowSize.width.value - scaledImageWidth;
                 }
             } else {
                 if (position.value.x < 0) {
                     position.value.x = 0;
-                } else if (
-                    imageRight > windowSize.width.value
-                ) {
+                } else if (imageRight > windowSize.width.value) {
                     position.value.x =
                         windowSize.width.value - scaledImageWidth;
                 }
@@ -126,18 +122,14 @@ const dragHandler = ({
             if (scaledImageHeight > windowSize.height.value) {
                 if (position.value.y > 0) {
                     position.value.y = 0;
-                } else if (
-                    imageBottom < windowSize.height.value
-                ) {
+                } else if (imageBottom < windowSize.height.value) {
                     position.value.y =
                         windowSize.height.value - scaledImageHeight;
                 }
             } else {
                 if (position.value.y < 0) {
                     position.value.y = 0;
-                } else if (
-                    imageBottom > windowSize.height.value
-                ) {
+                } else if (imageBottom > windowSize.height.value) {
                     position.value.y =
                         windowSize.height.value - scaledImageHeight;
                 }
@@ -379,7 +371,7 @@ const onVideoLoad = (videoWidth: number, videoHeight: number) => {
 </template>
 
 <style scoped lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .content {

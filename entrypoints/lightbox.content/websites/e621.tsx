@@ -1,4 +1,4 @@
-import { MediaType } from '@/entrypoints/lightbox.content';
+import { MediaType } from '~lightbox/mediaType';
 
 const e621CollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
@@ -39,15 +39,18 @@ const e621CollectImages: CollectImagesOptions = {
                 }
                 item.label = async () => {
                     try {
-                        return (await browser.runtime.sendMessage('uploader@bakatrouble.me', {
-                            type: 'getLabel',
-                            website: 'e621',
-                            tags,
-                        }));
-                    } catch (e) {
+                        return await browser.runtime.sendMessage(
+                            'uploader@bakatrouble.me',
+                            {
+                                type: 'getLabel',
+                                website: 'e621',
+                                tags,
+                            },
+                        );
+                    } catch (_e) {
                         return undefined;
                     }
-                }
+                };
                 return {
                     el,
                     item,

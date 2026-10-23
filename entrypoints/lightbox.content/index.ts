@@ -1,58 +1,6 @@
-import { App, createApp } from 'vue';
-import { getCollectImagesModule } from './websites';
-import Primary from './App.vue';
-import PortalVue from 'portal-vue';
-import { GesturePlugin } from '@vueuse/gesture';
-import mdiVue from 'mdi-vue/v3';
-import {
-    mdiContentCopy,
-    mdiCheck,
-    mdiOpenInNew,
-    mdiUpload,
-    mdiMagnify,
-    mdiClose,
-    mdiChevronRight,
-    mdiChevronLeft,
-    mdiVolumeHigh,
-    mdiVolumeOff,
-    mdiPlay,
-    mdiPause,
-    mdiFullscreen,
-} from '@mdi/js';
-import styles from '../../assets/tailwind.css?inline';
-
-export enum MediaType {
-    Image = 'image',
-    Video = 'video',
-}
-
-export const mountApp = (
-    mod: CollectImagesOptions,
-    container: HTMLElement | string,
-) => {
-    const app = createApp(Primary, { mod })
-        .use(PortalVue)
-        .use(GesturePlugin)
-        .use(mdiVue, {
-            icons: {
-                mdiContentCopy,
-                mdiCheck,
-                mdiOpenInNew,
-                mdiUpload,
-                mdiMagnify,
-                mdiClose,
-                mdiChevronLeft,
-                mdiChevronRight,
-                mdiFullscreen,
-                mdiPause,
-                mdiPlay,
-                mdiVolumeOff,
-                mdiVolumeHigh,
-            },
-        });
-    app.mount(container);
-    return app;
-};
+import styles from '~/assets/tailwind.css?inline';
+import { mountApp } from '~lightbox/mount';
+import { getCollectImagesModule } from '~lightbox/websites';
 
 export default defineContentScript({
     matches: ['*://*/*'],

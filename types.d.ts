@@ -1,5 +1,5 @@
 import { VNode } from 'vue';
-import { MediaType } from '@/entrypoints/lightbox.content';
+import { MediaType } from '~lightbox/mediaType';
 
 declare global {
     interface Window {
@@ -33,7 +33,7 @@ declare global {
     type MediaUrl = string;
     type MediaUrlCallback = () => Promise<MediaUrl>;
     type MediaLabel = string | VNode;
-    type MediaLabelCallback = () => Promise<MediaLabel>;
+    type MediaLabelCallback = () => Promise<MediaLabel | undefined>;
     type MediaTypeValue = MediaType;
     type MediaTypeCallback = () => Promise<MediaTypeValue>;
 

@@ -27,7 +27,7 @@ const { size = '100px', class: cls } = defineProps<{
 </template>
 
 <style scoped lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .progress-spinner {

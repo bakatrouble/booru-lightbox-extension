@@ -3,5 +3,21 @@
     "compilerOptions": {
         "jsx": "preserve",
         "jsxImportSource": "vue",
+        "paths": {
+            "~": ["."],
+            "~/*": ["./*"],
+            "~lightbox": ["./entrypoints/lightbox.content"],
+            "~lightbox/*": ["./entrypoints/lightbox.content/*"],
+            "~options": ["./entrypoints/options"],
+            "~options/*": ["./entrypoints/options/*"],
+            "~testpage": ["./entrypoints/test-page"],
+            "~testpage/*": ["./entrypoints/test-page/*"],
+            "@": ["."],
+            "@/*": ["./*"],
+            "@@": ["."],
+            "@@/*": ["./*"],
+            "~~": ["."],
+            "~~/*": ["./*"]
+        }
     }
 }

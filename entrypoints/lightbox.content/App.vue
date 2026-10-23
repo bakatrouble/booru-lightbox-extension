@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, provide, reactive, ref, watch } from 'vue';
 import qs from 'qs';
-import LightBox from './components/LightBox.vue';
-import Locate from './components/Locate.vue';
-import ScrollLock from './atoms/ScrollLock.vue';
+import { onMounted, provide, reactive, ref, watch } from 'vue';
+import ScrollLock from '~lightbox/atoms/ScrollLock.vue';
+import LightBox from '~lightbox/components/LightBox.vue';
+import Locate from '~lightbox/components/Locate.vue';
 
 const { mod } = defineProps<{
     mod: CollectImagesOptions;
@@ -64,7 +64,7 @@ onMounted(async () => {
             currentIdx.value = imageList.value.length - 1;
             updateLocationHash();
         } else {
-            currentIdx.value = parseInt(parsedQs.slide as string);
+            currentIdx.value = parseInt(parsedQs.slide as string, 10);
         }
         show.value = true;
     }
@@ -72,7 +72,7 @@ onMounted(async () => {
 
 const locate = ref<InstanceType<typeof Locate>>();
 
-// @ts-ignore
+// @ts-expect-error
 provide('locate', (el: HTMLElement) => locate.value?.locate(el));
 </script>
 

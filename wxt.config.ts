@@ -1,5 +1,4 @@
 import tailwindcss from '@tailwindcss/vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig, type WxtViteConfig } from 'wxt';
 
 export const updateManifestUrl =
@@ -8,23 +7,36 @@ export const extensionSlug = 'booru@bakatrouble.me';
 
 export default defineConfig({
     modules: ['@wxt-dev/module-vue'],
+    alias: {
+        '~lightbox': 'entrypoints/lightbox.content',
+        '~options': 'entrypoints/options',
+        '~testpage': 'entrypoints/test-page',
+    },
     zip: {
         excludeSources: ['web-ext-artifacts/**/*'],
     },
-    filterEntrypoints: ['lightbox', 'background', 'options'].concat(process.env.NODE_ENV === 'development' ? ['test-page'] : []),
+    filterEntrypoints: ['lightbox', 'background', 'options'].concat(
+        process.env.NODE_ENV === 'development' ? ['test-page'] : [],
+    ),
     vite: (): WxtViteConfig => ({
         build: {
             sourcemap: false,
             minify: false,
             cssMinify: false,
         },
-        plugins: [tailwindcss(), tsconfigPaths()],
+        // NOTE: no vite-tsconfig-paths here — path aliases for the extension
+        // build come from WXT's `alias` option above (keep the two in sync
+        // when adding a prefix). The plugin is still used by vitest.
+        plugins: [tailwindcss()],
     }),
     manifest: {
         browser_specific_settings: {
             gecko: {
                 id: extensionSlug,
                 update_url: `${updateManifestUrl}/manifest.json`,
+                data_collection_permissions: {
+                    required: ['none'],
+                },
             },
         },
         permissions: [

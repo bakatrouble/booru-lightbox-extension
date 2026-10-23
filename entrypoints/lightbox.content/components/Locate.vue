@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import Timeout from 'await-timeout';
 import { useAnimate, useElementBounding, useWindowScroll } from '@vueuse/core';
+import Timeout from 'await-timeout';
+import { computed, ref } from 'vue';
 
 const locateEl = ref<HTMLElement>();
 const locateElRect = useElementBounding(locateEl);

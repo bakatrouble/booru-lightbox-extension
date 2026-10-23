@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { MediaType } from '../index';
+import { MediaType } from '~lightbox/mediaType';
 
 const rule34CollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>

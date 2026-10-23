@@ -1,12 +1,14 @@
-import {
-    createFilterWrapper,
-    DebounceFilterOptions,
-    PromisifyFn,
+import type {
     AnyFn,
-    noop,
+    DebounceFilterOptions,
     EventFilter,
+    PromisifyFn,
 } from '@vueuse/core';
+import { createFilterWrapper, noop } from '@vueuse/core';
+import type { Ref } from 'vue';
 import { toValue } from 'vue';
+
+type MaybeRefOrGetter<T> = T | Ref<T> | (() => T);
 
 function debounceFilter(
     ms: MaybeRefOrGetter<number>,

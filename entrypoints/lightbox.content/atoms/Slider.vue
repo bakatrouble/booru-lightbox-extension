@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useElementBounding } from '@vueuse/core';
-import { HTMLAttributes, ref } from 'vue';
+import type { HTMLAttributes } from 'vue';
+import { ref } from 'vue';
 
 interface SliderProps extends /* @vue-ignore */ HTMLAttributes {
     max: number;
@@ -79,7 +80,7 @@ const onDragStart = (e: MouseEvent | TouchEvent) => {
 </template>
 
 <style scoped lang="css">
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .slider-area {

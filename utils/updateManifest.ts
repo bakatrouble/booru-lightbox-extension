@@ -2,18 +2,18 @@ import { type CliOptions, Command, Option, runExit } from 'clipanion';
 import jwt from 'jwt-simple';
 import ky from 'ky';
 import yoctoSpinner from 'yocto-spinner';
-import packageJson from '../package.json';
+import packageJson from '~/package.json';
 import 'dotenv/config';
 import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
+import path from 'node:path';
 import { simpleGit } from 'simple-git';
-import { extensionSlug, updateManifestUrl } from '../wxt.config';
-import path from "node:path";
+import { extensionSlug, updateManifestUrl } from '~/wxt.config';
 
 const repoUrl = 'git@github.com:bakatrouble/booru-lightbox-extension.git';
 
 const getAuth = (key: string, secret: string) => {
-    const issueTime = Math.floor(+new Date() / 1000);
+    const issueTime = Math.floor(Date.now() / 1000);
     return jwt.encode(
         {
             iss: key,
@@ -65,11 +65,11 @@ class ManifestCommand extends Command {
 
     get client() {
         return ky.extend({
-            prefixUrl: 'https://addons.mozilla.org/api/v5/addons',
+            prefix: 'https://addons.mozilla.org/api/v5/addons',
             hooks: {
                 beforeRequest: [
-                    (req) => {
-                        req.headers.set(
+                    ({ request }) => {
+                        request.headers.set(
                             'authorization',
                             `JWT ${getAuth(this.amoKey!, this.amoSecret!)}`,
                         );
@@ -80,7 +80,7 @@ class ManifestCommand extends Command {
     }
 
     async execute() {
-        const name = packageJson.name;
+        const _name = packageJson.name;
         const version = packageJson.version;
 
         this.spinner.start(`Waiting for version ${version}...`);
@@ -98,15 +98,17 @@ class ManifestCommand extends Command {
                     this.spinner.success(`Version ${version} found!`);
                     this.spinner.start('Downloading xpi...');
 
-                    const xpi = await this.client.get(v.file.url, { prefixUrl: '' }).arrayBuffer();
+                    const xpi = await this.client.get(v.file.url).arrayBuffer();
                     const xpiName = path.basename(v.file.url);
 
                     const updateManifest = (await ky
                         .get(`${updateManifestUrl}/manifest.json`)
                         .json()) as Manifest;
-                    updateManifest.addons[extensionSlug].updates = updateManifest.addons[extensionSlug].updates
-                        .filter((v) => v.version !== version);
-                    updateManifest.addons[extensionSlug].updates.push({
+                    const entry = updateManifest.addons[extensionSlug]!;
+                    entry.updates = entry.updates.filter(
+                        (v) => v.version !== version,
+                    );
+                    entry.updates.push({
                         version: version,
                         update_link: `${updateManifestUrl}/${xpiName}`,
                     });
@@ -120,7 +122,10 @@ class ManifestCommand extends Command {
                     } else {
                         await simpleGit('.manifest-repo').pull();
                     }
-                    await fs.writeFile(`.manifest-repo/${xpiName}`, Buffer.from(xpi));
+                    await fs.writeFile(
+                        `.manifest-repo/${xpiName}`,
+                        Buffer.from(xpi),
+                    );
                     const git = simpleGit('.manifest-repo');
                     try {
                         await fs.writeFile(

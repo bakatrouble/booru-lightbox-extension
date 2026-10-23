@@ -1,4 +1,4 @@
-import { MediaType } from "@/entrypoints/lightbox.content";
+import { MediaType } from '~lightbox/mediaType';
 
 const localCollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>

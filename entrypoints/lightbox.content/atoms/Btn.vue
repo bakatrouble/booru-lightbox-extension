@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HTMLAttributes } from 'vue';
+import type { HTMLAttributes } from 'vue';
 
 interface BtnProps extends /* @vue-ignore */ HTMLAttributes {
     icon?: string;
@@ -35,7 +35,7 @@ const {
 </template>
 
 <style lang="css" scoped>
-@reference "@/assets/tailwind.css";
+@reference "~/assets/tailwind.css";
 
 @layer components {
     .button {

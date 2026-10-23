@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { MediaType } from '../index';
+import { MediaType } from '~lightbox/mediaType';
 
 export const realBooruCollectImages: CollectImagesOptions = {
     callback: async (): Promise<MediaListItem[]> =>
@@ -18,7 +18,7 @@ export const realBooruCollectImages: CollectImagesOptions = {
                     const mediaVideo = doc.querySelector(
                         '#gelcomVideoPlayer',
                     ) as HTMLVideoElement;
-                    let isVideo = !mediaImage;
+                    const isVideo = !mediaImage;
                     let src = '';
                     if (mediaImage) {
                         src = mediaImage.src;

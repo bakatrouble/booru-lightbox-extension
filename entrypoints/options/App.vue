@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useStorageAsync } from "@vueuse/core";
+import { useStorageAsync } from '@vueuse/core';
 
 const gelbooruApiKey = useStorageAsync<string>('gelbooruApiKey', '', {
-    getItem: async key => (await browser.storage.sync.get(key))[key],
+    getItem: async (key) => (await browser.storage.sync.get(key))[key],
     setItem: (key, value) => browser.storage.sync.set({ [key]: value }),
-    removeItem: key => browser.storage.sync.remove(key),
+    removeItem: (key) => browser.storage.sync.remove(key),
 });
 </script>
 
