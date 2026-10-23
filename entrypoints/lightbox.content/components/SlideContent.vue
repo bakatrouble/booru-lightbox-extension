@@ -12,7 +12,7 @@ const { media, current, index } = defineProps<{
 }>();
 
 const displayingPreview = defineModel<boolean>('displayingPreview', {
-    default: true,
+    default: false,
 });
 
 const emit = defineEmits(['zoomStart', 'zoomEnd']);

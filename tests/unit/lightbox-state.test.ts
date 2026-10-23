@@ -5,6 +5,7 @@ import { describe, expect, it, type Mock, vi } from 'vitest';
 import { nextTick } from 'vue';
 import LightBox from '~lightbox/components/LightBox.vue';
 import { MediaType } from '~lightbox/mediaType';
+import { useMediaStore } from '~lightbox/stores/media';
 import { useViewerStore } from '~lightbox/stores/viewer';
 import { stubBrowser } from './setup';
 
@@ -180,6 +181,51 @@ describe('Track 1 viewer-state pins', () => {
             window.dispatchEvent(new Event('blur'));
             document.dispatchEvent(new KeyboardEvent('keyup', { key: 'x' }));
             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'u' }));
+            await flushPromises();
+            await new Promise((r) => setTimeout(r, 50));
+            expect(uploadCalls()).toHaveLength(1);
+        } finally {
+            canvas.restore();
+            wrapper.unmount();
+        }
+    });
+
+    it('shows the loading indicator and blocks uploads while the preview shows', async () => {
+        const canvas = mockCanvas();
+        const ctx = mountViewer();
+        const { wrapper } = ctx;
+        const media = useMediaStore(ctx.pinia);
+        try {
+            await openViewer(ctx);
+            const preview = wrapper.find('.slide-0 img.image.preview');
+            expect(preview.exists()).toBe(true);
+            preview.element.dispatchEvent(new Event('load'));
+            await nextTick();
+            await flushPromises();
+
+            // the parent learns the preview is showing (the spinner and
+            // the upload guard both read this flag)
+            expect(media.previewShown[0]).toBe(true);
+            expect(
+                wrapper.find('.top-2.left-2 svg.progress-spinner').exists(),
+            ).toBe(true);
+
+            // uploads are blocked while the preview shows
+            await uploadButton(ctx).trigger('click');
+            await flushPromises();
+            expect(uploadCalls()).toHaveLength(0);
+
+            // full image arrives: indicator clears, uploads unblock
+            wrapper
+                .find('.slide-0 img.image.main')
+                .element.dispatchEvent(new Event('load'));
+            await nextTick();
+            await flushPromises();
+            expect(media.previewShown[0]).toBe(false);
+            expect(
+                wrapper.find('.top-2.left-2 svg.progress-spinner').exists(),
+            ).toBe(false);
+            await uploadButton(ctx).trigger('click');
             await flushPromises();
             await new Promise((r) => setTimeout(r, 50));
             expect(uploadCalls()).toHaveLength(1);
