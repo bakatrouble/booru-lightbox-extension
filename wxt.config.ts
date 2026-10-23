@@ -50,7 +50,7 @@ export default defineConfig({
         ],
         web_accessible_resources: [
             {
-                resources: ['iframe.html'],
+                resources: [],
                 matches: ['*://*/*'],
             },
         ],
