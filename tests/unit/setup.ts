@@ -26,9 +26,19 @@ const stubBrowser = {
     runtime: {
         sendMessage: vi.fn(async () => undefined),
     },
+    webRequest: {
+        onHeadersReceived: {
+            addListener: vi.fn(),
+        },
+    },
 };
 
 vi.stubGlobal('browser', stubBrowser);
+
+// WXT entrypoint-definition globals. Stubbed as identity so Node-side code
+// (background script, composables) can be imported in unit tests without the
+// WXT build. Only used by tests that import those modules directly.
+vi.stubGlobal('defineBackground', (definition: unknown) => definition);
 
 beforeEach(() => {
     vi.clearAllMocks();

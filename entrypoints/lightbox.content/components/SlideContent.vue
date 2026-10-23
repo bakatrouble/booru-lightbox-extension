@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { useDebounce, useImage, useWindowSize } from '@vueuse/core';
-import type { FullGestureState } from '@vueuse/gesture';
-import { reactive, ref, watch } from 'vue';
+import { useDebounce } from '@vueuse/core';
+import { ref, watch } from 'vue';
 import LoadingPlaceholder from '~lightbox/components/LoadingPlaceholder.vue';
 import VideoPlayer from '~lightbox/components/VideoPlayer.vue';
+import { useSlideViewport } from '~lightbox/composables/useSlideViewport';
 import { MediaType } from '~lightbox/mediaType';
 
-const { media, current, sliding, index } = defineProps<{
+const { media, current, index } = defineProps<{
     media: LoadedMediaListItem;
     current?: boolean;
-    sliding?: boolean;
     index: number;
 }>();
 
@@ -19,260 +18,53 @@ const emit = defineEmits(['zoomStart', 'zoomEnd']);
 
 const loaded = ref(false);
 const previewLoaded = ref(false);
-const mediaSize = ref<Vector2>({ x: 0, y: 0 });
-const windowSize = useWindowSize();
-const initialRatio = ref(1);
-const currentRatio = ref(1);
-const panning = ref(false);
-const position = ref<Vector2>({ x: 0, y: 0 });
-const draggingStartPosition = ref<Vector2>({ x: 0, y: 0 });
-const pinching = ref(false);
-const zoomedIn = ref(false);
-const delayedPanning = useDebounce(panning, 100);
+
+const viewport = useSlideViewport({
+    isContentLoaded: () => loaded.value,
+    onZoomStart: () => emit('zoomStart'),
+    onZoomEnd: () => emit('zoomEnd'),
+});
+const {
+    currentRatio,
+    handleDoubleClick: onDoubleClick,
+    handleDrag: dragHandler,
+    handlePinch: pinchHandler,
+    handleWheel: wheelHandler,
+    mediaSize,
+    panning,
+    delayedPanning,
+    position,
+} = viewport;
 
 const image = ref<HTMLImageElement>();
 const preview = ref<HTMLImageElement>();
 const video = ref<typeof VideoPlayer>();
 
-const unloadedPosition = {
-    left: '50%',
-    top: '50%',
-    width: 0,
-    height: 0,
-};
-
-watch(loaded, (loaded) => {
-    if (loaded) {
-        position.value = {
-            x:
-                (windowSize.width.value -
-                    mediaSize.value.x * currentRatio.value) /
-                2,
-            y:
-                (windowSize.height.value -
-                    mediaSize.value.y * currentRatio.value) /
-                2,
-        };
+watch(loaded, (isLoaded) => {
+    if (isLoaded) {
+        viewport.centerOnScreen();
     }
 });
 
 watch(
     () => current,
-    (current) => {
-        if (!current) {
+    (isCurrent) => {
+        if (!isCurrent) {
             video.value?.pause();
-            unzoom();
+            viewport.unzoom();
         }
     },
 );
 
-const unzoom = () => {
-    currentRatio.value = initialRatio.value;
-    position.value = {
-        x:
-            (windowSize.width.value - mediaSize.value.x * currentRatio.value) /
-            2,
-        y:
-            (windowSize.height.value - mediaSize.value.y * currentRatio.value) /
-            2,
-    };
-    zoomedIn.value = false;
-    emit('zoomEnd');
-};
-
-const onDoubleClick = (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    unzoom();
-    return true;
-};
-
-const dragHandler = ({
-    dragging: draggingGesture,
-    delta: [deltaX, deltaY],
-    event,
-    cancel,
-}: FullGestureState<'drag'>) => {
-    if (panning.value && !draggingGesture) {
-        panning.value = pinching.value = false;
-
-        {
-            // constraint image into screen
-            const scaledImageWidth = mediaSize.value.x * currentRatio.value;
-            const scaledImageHeight = mediaSize.value.y * currentRatio.value;
-            const imageRight = position.value.x + scaledImageWidth;
-            const imageBottom = position.value.y + scaledImageHeight;
-
-            if (scaledImageWidth > windowSize.width.value) {
-                if (position.value.x > 0) {
-                    position.value.x = 0;
-                } else if (imageRight < windowSize.width.value) {
-                    position.value.x =
-                        windowSize.width.value - scaledImageWidth;
-                }
-            } else {
-                if (position.value.x < 0) {
-                    position.value.x = 0;
-                } else if (imageRight > windowSize.width.value) {
-                    position.value.x =
-                        windowSize.width.value - scaledImageWidth;
-                }
-            }
-
-            if (scaledImageHeight > windowSize.height.value) {
-                if (position.value.y > 0) {
-                    position.value.y = 0;
-                } else if (imageBottom < windowSize.height.value) {
-                    position.value.y =
-                        windowSize.height.value - scaledImageHeight;
-                }
-            } else {
-                if (position.value.y < 0) {
-                    position.value.y = 0;
-                } else if (imageBottom > windowSize.height.value) {
-                    position.value.y =
-                        windowSize.height.value - scaledImageHeight;
-                }
-            }
-        }
-        return;
-    }
-
-    if (pinching.value || !zoomedIn.value) return;
-
-    if (!panning.value && draggingGesture) {
-        if (
-            typeof (event as MouseEvent).button !== 'undefined' &&
-            (event as MouseEvent).button !== 0
-        ) {
-            cancel();
-            return;
-        }
-        panning.value = true;
-    } else if (panning.value && draggingGesture) {
-        position.value.x = position.value.x + deltaX;
-        position.value.y = position.value.y + deltaY;
-    }
-};
-
-const pinchData = reactive({
-    pinchInitialDistance: 0,
-    pinchStartRatio: 0,
-    previousCenter: { x: 0, y: 0 } satisfies Vector2,
-});
-
-const pinchHandler = ({
-    da: [distance],
-    pinching: pinchingGesture,
-    origin: [ox, oy],
-    event,
-}: FullGestureState<'pinch'>) => {
-    event?.preventDefault();
-    if (!loaded.value) {
-        return;
-    }
-    if (!pinching.value && pinchingGesture) {
-        // pinch start
-        pinching.value = true;
-        panning.value = true;
-        zoomedIn.value = true;
-        draggingStartPosition.value = position.value;
-        pinchData.pinchInitialDistance = distance;
-        pinchData.pinchStartRatio = currentRatio.value;
-        pinchData.previousCenter = { x: ox, y: oy };
-        emit('zoomStart');
-    } else if (pinching.value && pinchingGesture) {
-        const newRatio =
-            (pinchData.pinchStartRatio * distance) /
-            pinchData.pinchInitialDistance;
-        const originXInImageSpace = ox - position.value.x;
-        const originYInImageSpace = oy - position.value.y;
-        const newCenterXInImageSpace =
-            (originXInImageSpace * newRatio) / currentRatio.value;
-        const newCenterYInImageSpace =
-            (originYInImageSpace * newRatio) / currentRatio.value;
-        position.value = {
-            x:
-                ox -
-                newCenterXInImageSpace +
-                ((ox - pinchData.previousCenter.x) * newRatio) /
-                    currentRatio.value,
-            y:
-                oy -
-                newCenterYInImageSpace +
-                ((oy - pinchData.previousCenter.y) * newRatio) /
-                    currentRatio.value,
-        };
-        pinchData.previousCenter = { x: ox, y: oy };
-        currentRatio.value = newRatio;
-    }
-};
-
-const wheelHandler = ({ delta: [x, y], event }: FullGestureState<'wheel'>) => {
-    event?.preventDefault();
-    if (!loaded.value) {
-        return;
-    }
-    const newRatio = Math.max(
-        initialRatio.value * 0.1,
-        currentRatio.value * (1 + Math.max(-1, (-y || x) / 500)),
-    );
-    const mouseX = (event as WheelEvent).clientX;
-    const mouseY = (event as WheelEvent).clientY;
-    const mouseXInImageSpace = mouseX - position.value.x;
-    const mouseYInImageSpace = mouseY - position.value.y;
-    const newMouseXInImageSpace =
-        (mouseXInImageSpace * newRatio) / currentRatio.value;
-    const newMouseYInImageSpace =
-        (mouseYInImageSpace * newRatio) / currentRatio.value;
-    position.value = {
-        x: mouseX - newMouseXInImageSpace,
-        y: mouseY - newMouseYInImageSpace,
-    };
-    currentRatio.value = newRatio;
-    zoomedIn.value = true;
-    emit('zoomStart');
-};
-
 const onWindowResize = () => {
-    let newInitialRatio = 1;
-    let resetPosition = false;
-
-    if (
-        mediaSize.value.x &&
-        mediaSize.value.y &&
-        (mediaSize.value.x > windowSize.width.value ||
-            mediaSize.value.y > windowSize.height.value)
-    )
-        newInitialRatio = Math.min(
-            windowSize.width.value / mediaSize.value.x,
-            windowSize.height.value / mediaSize.value.y,
-        );
-
-    if (initialRatio.value === currentRatio.value) {
-        currentRatio.value = newInitialRatio;
-        resetPosition = true;
-    }
-
-    initialRatio.value = newInitialRatio;
-    if (!loaded.value || resetPosition) {
-        position.value = {
-            x: windowSize.width.value / 2,
-            y: windowSize.height.value / 2,
-        };
-        const mediaElement = image.value || video.value;
-        if (resetPosition && mediaElement) {
-            position.value.x -= (currentRatio.value * mediaSize.value.x) / 2;
-            position.value.y -= (currentRatio.value * mediaSize.value.y) / 2;
-        }
-    }
+    viewport.fitToWindow(loaded.value, !!(image.value || video.value));
 };
-watch([windowSize.width, windowSize.height], onWindowResize);
+watch([viewport.windowSize.width, viewport.windowSize.height], onWindowResize);
 
 const onImageLoad = (type: 'main' | 'preview') => {
     const element = type === 'main' ? image : preview;
     if (!element.value) return;
-    mediaSize.value = {
+    viewport.mediaSize.value = {
         x: element.value.naturalWidth || 0,
         y: element.value.naturalHeight || 0,
     };
@@ -285,13 +77,12 @@ const onImageLoad = (type: 'main' | 'preview') => {
         loaded.value = true;
         displayingPreview.value = false;
     }
-    console.log(type);
     onWindowResize();
 };
 
 const onVideoLoad = (videoWidth: number, videoHeight: number) => {
     if (!video.value) return;
-    mediaSize.value = {
+    viewport.mediaSize.value = {
         x: videoWidth || 0,
         y: videoHeight || 0,
     };

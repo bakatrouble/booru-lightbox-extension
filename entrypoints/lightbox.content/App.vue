@@ -1,93 +1,55 @@
 <script setup lang="ts">
 import qs from 'qs';
-import { onMounted, provide, reactive, ref, watch } from 'vue';
+import { onMounted, provide, ref, watch } from 'vue';
 import ScrollLock from '~lightbox/atoms/ScrollLock.vue';
 import LightBox from '~lightbox/components/LightBox.vue';
 import Locate from '~lightbox/components/Locate.vue';
+import { useViewerStore } from '~lightbox/stores/viewer';
 
 const { mod } = defineProps<{
     mod: CollectImagesOptions;
 }>();
 
-const imageList = ref<MediaListItem[]>([]);
-const currentIdx = ref(0);
-const show = ref(false);
+const viewer = useViewerStore();
 
 const updateLocationHash = () => {
     const url = new URL(location.href);
     const parsedQs = qs.parse(location.hash.slice(1));
-    if (!show.value) {
+    if (!viewer.show) {
         parsedQs.slide = undefined;
     } else {
-        parsedQs.slide = currentIdx.value.toString();
+        parsedQs.slide = viewer.currentIdx.toString();
     }
     const stringifiedQs = qs.stringify(parsedQs);
     url.hash = stringifiedQs === '' ? '' : `#${stringifiedQs}`;
     history.replaceState('', '', url);
 };
 
-watch([currentIdx, show], updateLocationHash);
-
-const openLightbox = (idx: number) => {
-    currentIdx.value = idx;
-    show.value = true;
-};
-
-const scanImages = async () => {
-    const newImageList = await mod.callback();
-    if (
-        newImageList
-            .map(({ el }) => el.hasAttribute('data-lightbox-attached'))
-            .every(Boolean)
-    )
-        return;
-    imageList.value = newImageList;
-    imageList.value.forEach(({ el }, i) => {
-        if (el.hasAttribute('data-lightbox-attached')) return;
-        el.addEventListener('click', (e) => {
-            e.preventDefault();
-            openLightbox(i);
-        });
-        el.setAttribute('data-lightbox-attached', '');
-    });
-    show.value = false;
-};
+watch([() => viewer.currentIdx, () => viewer.show], updateLocationHash);
 
 onMounted(async () => {
-    await scanImages();
+    viewer.configure(mod);
+    await viewer.scanImages(mod);
     if (mod.rescanInterval) {
-        setInterval(scanImages, mod.rescanInterval);
+        setInterval(() => viewer.scanImages(mod), mod.rescanInterval);
     }
     const parsedQs = qs.parse(location.hash.slice(1));
     if (parsedQs.slide) {
         if (parsedQs.slide === 'last') {
-            currentIdx.value = imageList.value.length - 1;
+            viewer.slideTo(viewer.imageList.length - 1);
             updateLocationHash();
         } else {
-            currentIdx.value = parseInt(parsedQs.slide as string, 10);
+            viewer.slideTo(parseInt(parsedQs.slide as string, 10));
         }
-        show.value = true;
+        viewer.show = true;
     }
 });
-
-const locate = ref<InstanceType<typeof Locate>>();
-
-// @ts-expect-error
-provide('locate', (el: HTMLElement) => locate.value?.locate(el));
 </script>
 
 <template>
-    <scroll-lock v-if="show" />
-    <light-box
-        :show="show"
-        :image-list="imageList as any"
-        :current-idx="currentIdx"
-        :collect-images-module="mod"
-        @slide="currentIdx = $event"
-        @slide-delta="currentIdx += $event"
-        @close="show = false"
-    />
-    <locate ref="locate" />
+    <scroll-lock v-if="viewer.show" />
+    <light-box />
+    <locate />
 </template>
 
 <style lang="css">

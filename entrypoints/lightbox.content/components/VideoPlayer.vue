@@ -141,11 +141,6 @@ defineExpose({
             unselectable="on"
             @loadedmetadata="onLoadedMetadata"
         >
-            <!--            @volumechange="volume = video?.volume || 0; muted = video?.muted || true"-->
-            <!--            @timeupdate="currentTime = video?.currentTime || 0"-->
-            <!--            @pause="playing = false"-->
-            <!--            @play="playing = true"-->
-            <!--            @progress="buffered = video?.buffered"-->
             <slot />
         </video>
 
@@ -156,7 +151,7 @@ defineExpose({
         <portal to="video-toolbar" :disabled="!isCurrent || !loaded">
             <div class="absolute bottom-5 left-0 right-0 flex flex-row justify-center items-center">
                 <panel
-                    class="video-toolbar w-1/2 blur-out !transition-opacity-interactive"
+                    class="video-toolbar w-1/2 blur-out transition-opacity-interactive!"
                     :data-visible="toolbar && isCurrent"
                     :data-blur="blurToolbar"
                     @mouseenter="toolbarLock = true"
@@ -226,7 +221,7 @@ defineExpose({
                 flex
                 justify-center
                 items-center
-                transition-[opacity]
+                transition-opacity
                 bg-black/60
                 group-data-[paused="false"]:opacity-0;
 

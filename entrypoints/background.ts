@@ -1,8 +1,8 @@
 export default defineBackground({
     main: () => {
         browser.webRequest.onHeadersReceived.addListener(
-            ({ responseHeaders, url }) => {
-                console.log('Adding CSP header to', url, responseHeaders);
+            ({ responseHeaders /*url*/ }) => {
+                // console.log('Adding CSP header to', url, responseHeaders);
                 responseHeaders = responseHeaders?.filter(
                     (h) => h.name.toLowerCase() !== 'content-security-policy',
                 );

@@ -27,7 +27,6 @@ const onDragMove = (e: MouseEvent | TouchEvent) => {
         1,
     );
     modelValue.value = percentage * max;
-    console.log(`${percentage} * ${max} = ${modelValue.value}`);
 };
 
 const onDragStop = () => {

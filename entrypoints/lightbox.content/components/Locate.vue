@@ -1,47 +1,19 @@
 <script setup lang="ts">
-import { useAnimate, useElementBounding, useWindowScroll } from '@vueuse/core';
-import Timeout from 'await-timeout';
-import { computed, ref } from 'vue';
+import { useAnimate } from '@vueuse/core';
+import { ref } from 'vue';
+import { useLocateStore } from '~lightbox/stores/locate.ts';
 
-const locateEl = ref<HTMLElement>();
-const locateElRect = useElementBounding(locateEl);
-const scroll = useWindowScroll();
+const locateStore = useLocateStore();
+
 const box = ref<HTMLElement>();
-const animationDuration = 500;
 useAnimate(box, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], {
-    duration: animationDuration,
+    duration: locateStore.animationDuration,
     iterations: Infinity,
-});
-
-const locateBoxRect = computed(() => {
-    if (!locateEl.value && !locateElRect.left.value)
-        return { left: 0, top: 0, width: 0, height: 0 };
-    return {
-        left: `${locateElRect.left.value + scroll.x.value - 5}px`,
-        top: `${locateElRect.top.value + scroll.y.value - 5}px`,
-        width: `${locateElRect.width.value + 10}px`,
-        height: `${locateElRect.height.value + 10}px`,
-    };
-});
-
-const locate = async (el: HTMLElement) => {
-    el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center',
-    });
-    locateEl.value = el;
-    await Timeout.set(5000 - animationDuration / 2); // should stop mid-animation at opacity 0
-    locateEl.value = undefined;
-};
-
-defineExpose({
-    locate,
 });
 </script>
 
 <template>
-    <teleport to="body" :disabled="!locateEl">
+    <teleport to="body" :disabled="!locateStore.locateBoxRect">
         <div
             style="
                 position: absolute;
@@ -53,11 +25,10 @@ defineExpose({
             "
         >
             <div
-                v-if="locateEl"
+                v-if="!!locateStore.locateBoxRect"
                 ref="box"
                 :style="[
-                    console.log(locateBoxRect),
-                    locateBoxRect,
+                    locateStore.locateBoxRect,
                     'border-radius: 5px; position: absolute; background: #f006; pointer-events: none',
                 ]"
             />
