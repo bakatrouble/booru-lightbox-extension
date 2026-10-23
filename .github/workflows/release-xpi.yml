@@ -1,10 +1,17 @@
 name: Release pushed XPI
 
 # updateManifest.ts pushes one commit per published version (manifest.json +
-# the new .xpi). This workflow attaches that XPI to a GitHub release named
-# after the version, so every published build is downloadable from Releases.
-# Re-runs and re-pushes are safe: existing releases are reused and the asset
-# is re-uploaded with --clobber.
+# the new .xpi). This workflow does two independent things with it:
+#
+# - release: attach the XPI to a GitHub release named after the version, so
+#   every published build is downloadable from Releases.
+# - pages: publish the branch (manifest.json + all XPIs) to GitHub Pages,
+#   which is where Firefox fetches updates from (update_link URLs).
+#
+# The jobs are independent on purpose: Pages is the critical path for
+# updates, so a transient `gh release` failure must not block deployment.
+# Re-runs and re-pushes are safe: existing releases are reused and assets
+# are re-uploaded with --clobber; Pages deployments are serialized below.
 
 on:
   push:
@@ -14,6 +21,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -54,3 +65,32 @@ jobs:
             fi
             gh release upload "$version" "$file" --clobber
           done
+
+  pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Stage site content
+        run: |
+          mkdir public
+          cp manifest.json *.xpi public/
+          ls public
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
