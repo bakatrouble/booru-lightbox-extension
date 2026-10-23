@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./font.css";
 
 @theme {
     --base-z-index: 100000000;
@@ -10,6 +11,12 @@
     --color-button-hover: var(--color-blue-800);
     --color-button-active: var(--color-blue-900);
     --radius-default: var(--radius-lg);
+}
+
+.lightbox {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
 @utility blur-out {

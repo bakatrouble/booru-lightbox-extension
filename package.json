@@ -50,6 +50,7 @@
         "yocto-spinner": "^1.2.2"
     },
     "dependencies": {
+        "@fontsource/roboto": "^5.3.0",
         "@mdi/js": "^7.4.47",
         "@vueuse/core": "^15.0.0",
         "@vueuse/gesture": "^2.0.0",
