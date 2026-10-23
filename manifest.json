@@ -193,6 +193,10 @@
                 {
                     "version": "3.8.2",
                     "update_link": "https://bakatrouble.github.io/booru-lightbox-extension/booru_lightbox_bakatrouble-3.8.2.xpi"
+                },
+                {
+                    "version": "3.8.3",
+                    "update_link": "https://bakatrouble.github.io/booru-lightbox-extension/booru_lightbox_bakatrouble-3.8.3.xpi"
                 }
             ]
         }
