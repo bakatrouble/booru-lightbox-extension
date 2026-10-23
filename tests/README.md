@@ -39,8 +39,9 @@
   via a stub host with document-level events; press-to-toggle (click
   toggles, drag doesn't, stray release doesn't); Teleport integration (real
   `VideoPlayer` — toolbar renders in place until `loadedmetadata`, then
-  moves to the store target). Each case unmounts — listeners live on
-  `document`.
+  moves to the store target); buffered ranges (seek tail arriving via
+  `seeked` with no `progress` is reported). Each case unmounts —
+  listeners live on `document`.
 - `websites.dom.test.ts` — DOM-only adapters (e621, yandere, local) against
   HTML fixtures in `tests/unit/fixtures/`.
 - `websites.gelbooru.test.ts` — dapi API adapter with `ky` mocked; asserts

@@ -182,6 +182,97 @@ describe('video press-to-toggle', () => {
     });
 });
 
+describe('video buffered ranges', () => {
+    const mountPlaybackWithVideo = () => {
+        // NOTE: `video` must be top-level setup state. `proxyRefs` is
+        // shallow: assigning through the nested `pb` object (`vm.pb.video`)
+        // would *replace* the ref instead of setting `.value`, silently
+        // disconnecting the composable's closure (reads still look right).
+        // SFC `ref="video"` templates are unaffected — only manual render
+        // functions hit this.
+        const wrapper = mount(
+            defineComponent({
+                setup() {
+                    const pb = useVideoPlayback();
+                    return { pb, video: pb.video };
+                },
+                render() {
+                    const vm = this as unknown as {
+                        video: HTMLVideoElement;
+                    };
+                    return h('video', {
+                        ref: (el: unknown) => {
+                            vm.video = el as HTMLVideoElement;
+                        },
+                    });
+                },
+            }),
+            { attachTo: document.body },
+        );
+        return wrapper;
+    };
+
+    const setBuffered = (el: HTMLVideoElement, ranges: [number, number][]) => {
+        Object.defineProperty(el, 'buffered', {
+            configurable: true,
+            value: {
+                length: ranges.length,
+                start: (i: number) => ranges[i]![0],
+                end: (i: number) => ranges[i]![1],
+            },
+        });
+    };
+
+    const stubMedia = () => {
+        const proto = HTMLMediaElement.prototype as unknown as Record<
+            string,
+            unknown
+        >;
+        const origPlay = proto.play;
+        const origPause = proto.pause;
+        proto.play = vi.fn().mockResolvedValue(undefined);
+        proto.pause = vi.fn();
+        return () => {
+            proto.play = origPlay;
+            proto.pause = origPause;
+        };
+    };
+
+    it('reports ranges that arrive without a progress event', async () => {
+        const restore = stubMedia();
+        const wrapper = mountPlaybackWithVideo();
+        try {
+            // useEventListener registers in a post-flush watcher
+            await nextTick();
+            const { pb } = wrapper.vm as unknown as {
+                pb: ReturnType<typeof useVideoPlayback>;
+            };
+            const el = wrapper.find('video').element as HTMLVideoElement;
+
+            setBuffered(el, [[0, 10]]);
+            el.dispatchEvent(new Event('progress'));
+            await nextTick();
+            expect(pb.bufferedSegments.value).toEqual([{ end: 10, start: 0 }]);
+
+            // seek tail from cache: no `progress` follows, only `seeked`.
+            // The old progress-only sync never reported this range.
+            setBuffered(el, [
+                [0, 10],
+                [20, 30],
+            ]);
+            el.dispatchEvent(new Event('seeked'));
+            await nextTick();
+            expect(pb.bufferedSegments.value).toEqual([
+                { end: 10, start: 0 },
+                { end: 30, start: 20 },
+            ]);
+        } finally {
+            wrapper.unmount();
+            restore();
+        }
+    });
+});
+
 describe('video toolbar teleport', () => {
     it('renders in place until loaded, then moves to the store target', async () => {
         const pinia = createPinia();

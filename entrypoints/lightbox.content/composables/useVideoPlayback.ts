@@ -1,4 +1,8 @@
-import { useLocalStorage, useMediaControls } from '@vueuse/core';
+import {
+    useEventListener,
+    useLocalStorage,
+    useMediaControls,
+} from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import { formatDuration } from '~lightbox/utils';
 
@@ -14,7 +18,6 @@ export function useVideoPlayback() {
         currentTime,
         playing,
         duration,
-        buffered,
     } = useMediaControls(video);
     const volume = useLocalStorage('lightbox.volume', 1, {
         mergeDefaults: true,
@@ -25,11 +28,37 @@ export function useVideoPlayback() {
 
     const formattedTime = computed(() => formatDuration(currentTime.value));
     const formattedLength = computed(() => formatDuration(duration.value));
-    const bufferedSegments = computed(() =>
-        buffered.value.map((segment) => ({
-            start: segment[0],
-            end: segment[1],
-        })),
+
+    // useMediaControls refreshes its `buffered` on `progress` only, so the
+    // newest range silently never shows: seek tails (data from cache fires
+    // no `progress`), fully-cached media, and post-completion tails. Read
+    // TimeRanges off the element on every event that can change them.
+    const bufferedSegments = ref<{ start: number; end: number }[]>([]);
+    const refreshBuffered = () => {
+        const el = video.value;
+        if (!el) {
+            bufferedSegments.value = [];
+            return;
+        }
+        const ranges: { start: number; end: number }[] = [];
+        for (let i = 0; i < el.buffered.length; i++) {
+            ranges.push({
+                start: el.buffered.start(i),
+                end: el.buffered.end(i),
+            });
+        }
+        bufferedSegments.value = ranges;
+    };
+    useEventListener(
+        video,
+        [
+            'progress',
+            'loadedmetadata',
+            'canplaythrough',
+            'seeked',
+            'timeupdate',
+        ],
+        refreshBuffered,
     );
 
     watch(volume, (value) => (videoVolume.value = value), { immediate: true });
