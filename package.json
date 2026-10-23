@@ -1,16 +1,17 @@
 {
     "name": "booru-lightbox",
     "private": true,
-    "version": "3.8.1",
+    "version": "3.8.2",
     "displayName": "Booru Lightbox",
     "author": "bakatrouble",
     "description": "Lightbox viewers on booru websites",
     "type": "module",
     "scripts": {
-        "dev": "wxt",
-        "dev:firefox": "wxt -b firefox",
-        "build": "wxt build",
-        "build:firefox": "wxt build -b firefox",
+        "dev": "pnpm build:worker && wxt",
+        "dev:firefox": "pnpm build:worker && wxt -b firefox",
+        "build": "pnpm build:worker && wxt build",
+        "build:firefox": "pnpm build:worker && wxt build -b firefox",
+        "build:worker": "tsc workers/encode-worker.ts --ignoreConfig --outDir public --target es2022 --lib es2022,dom --module esnext --moduleResolution bundler --skipLibCheck && wxt prepare",
         "zip": "wxt zip",
         "zip:firefox": "wxt zip -b firefox",
         "postinstall": "wxt prepare",
@@ -20,7 +21,7 @@
         "test:unit": "vitest run",
         "test:e2e": "playwright test",
         "lint": "biome check .",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "pnpm build:worker && tsc --noEmit"
     },
     "license": "MIT",
     "devDependencies": {

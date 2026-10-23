@@ -8,7 +8,11 @@
 
 ## Unit (`tests/unit`, vitest + jsdom)
 
-- `utils.test.ts` — `resolveScalarOrFunction`, `formatDuration`.
+- `utils.test.ts` — `resolveScalarOrFunction`, `formatDuration` (incl. the
+  hour fix: no minute/second leak past 59).
+- `image-encoder.test.ts` — `fitDimensionSum` math (untouched/exact-cap/
+  scaled-to-cap/panorama/floor) + the synchronous fallback path where
+  workers are unavailable.
 - `domains.test.ts` — all nine adapters resolve for their hosts (exact +
   subdomain matrix) and lookalike domains (`evilgelbooru.com`,
   `gelbooru.com.evil.com`, …) resolve to nothing.

@@ -40,6 +40,9 @@ Host matching is exact-or-subdomain (`evilgelbooru.com` does not match
   Chromium); see `tests/README.md`.
 - `utils/` — `signExtension.ts` (`pnpm sign`) and `updateManifest.ts`
   (`pnpm update-manifest`) for the AMO release flow.
+- `workers/` — TypeScript sources compiled to `public/` by
+  `pnpm build:worker` (runs automatically before dev/build/typecheck;
+  output is gitignored): currently the JPEG upload encoder.
 - `wxt.config.ts` — extension config and manifest. `web-ext.config.ts` is
   local-only (gitignored); copy from `web-ext.config.ts.example`.
 

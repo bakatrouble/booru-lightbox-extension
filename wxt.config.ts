@@ -50,7 +50,10 @@ export default defineConfig({
         ],
         web_accessible_resources: [
             {
-                resources: [],
+                // encode-worker.js: JPEG upload rendering off the main
+                // thread; instantiated from the content script via
+                // browser.runtime.getURL (needs explicit listing).
+                resources: ['encode-worker.js'],
                 matches: ['*://*/*'],
             },
         ],

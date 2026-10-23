@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
+import { renderSlideToJpeg } from '~lightbox/imageEncoder';
 import { MediaType } from '~lightbox/mediaType';
 import { useMediaStore } from '~lightbox/stores/media';
 import { useViewerStore } from '~lightbox/stores/viewer';
@@ -103,16 +104,9 @@ export const useUploadStore = defineStore('upload', () => {
             return;
         }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = el.naturalWidth;
-        canvas.height = el.naturalHeight;
-        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        ctx.rect(0, 0, el.naturalWidth, el.naturalHeight);
-        ctx.fillStyle = 'white';
-        ctx.fill();
-        ctx.drawImage(el, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 1);
-        canvas.remove();
+        // Worker-encoded off the main thread with the dimension-sum cap;
+        // falls back to synchronous rendering where workers are unavailable.
+        const dataUrl = await renderSlideToJpeg(el);
 
         await browser.runtime.sendMessage('uploader@bakatrouble.me', {
             type: 'upload',
