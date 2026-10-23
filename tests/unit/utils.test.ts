@@ -29,8 +29,9 @@ describe('formatDuration', () => {
         expect(formatDuration(600)).toBe('10:00');
     });
 
-    // NOTE: hour+ durations are currently concatenated without a separator
-    // (e.g. 3661 -> "161:01"). Locked here only as documentation; fix the
-    // implementation and update this expectation to "1:01:01".
-    // TODO: fix formatDuration hour handling.
+    it('formats hours without leaking minutes past 59', async () => {
+        expect(formatDuration(3600)).toBe('1:00:00');
+        expect(formatDuration(3661)).toBe('1:01:01');
+        expect(formatDuration(36000 + 59 * 60 + 59)).toBe('10:59:59');
+    });
 });
