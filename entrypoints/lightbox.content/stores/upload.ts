@@ -98,17 +98,17 @@ export const useUploadStore = defineStore('upload', () => {
     const notifyWaiting = async () => {
         if (pendingNoticeId.value !== undefined || noticeInFlight) return;
         noticeInFlight = true;
+        const noticeId = crypto.randomUUID();
         try {
-            pendingNoticeId.value = (await browser.runtime.sendMessage(
-                UPLOADER_ID,
-                {
-                    type: 'notification',
-                    options: {
-                        level: 'loading',
-                        message: 'Waiting for the full image to load…',
-                    },
+            await browser.runtime.sendMessage(UPLOADER_ID, {
+                type: 'notification',
+                options: {
+                    id: noticeId,
+                    level: 'loading',
+                    message: 'Waiting for the full image to load…',
                 },
-            )) as string;
+            });
+            pendingNoticeId.value = noticeId;
         } catch {
             // uploader unreachable — queue silently, the upload fails loudly
         } finally {
