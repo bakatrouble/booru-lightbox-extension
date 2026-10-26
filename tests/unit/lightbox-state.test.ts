@@ -22,7 +22,7 @@ const uploadLink = {
     id: 'test',
     name: 'Test uploader',
     shortName: 'UPL',
-    url: 'https://uploader.test/',
+    apiKey: 'test-key',
     hotkey: ['u'],
 };
 
@@ -319,6 +319,7 @@ describe('Track 1 viewer-state pins', () => {
             // so direct access is fine — the assertions fail on undefined)
             const sent = uploadCalls()[0]![1] as any;
             expect(sent.method).toBe('photoArrayBuffer');
+            expect(sent.apiKey).toBe('test-key');
             expect(sent.data).toBeInstanceOf(ArrayBuffer);
             expect(sent.data.byteLength).toBeGreaterThan(0);
         } finally {

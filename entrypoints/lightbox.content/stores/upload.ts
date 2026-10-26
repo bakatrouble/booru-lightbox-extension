@@ -71,7 +71,7 @@ export const useUploadStore = defineStore('upload', () => {
         await browser.runtime.sendMessage(UPLOADER_ID, {
             type: 'upload',
             method: 'gif',
-            endpoint: uploadLink.url,
+            apiKey: uploadLink.apiKey,
             url: src,
         });
     };
@@ -80,7 +80,7 @@ export const useUploadStore = defineStore('upload', () => {
         await browser.runtime.sendMessage(UPLOADER_ID, {
             type: 'upload',
             method: 'video',
-            endpoint: uploadLink.url,
+            apiKey: uploadLink.apiKey,
             url: src,
         });
     };
@@ -178,7 +178,7 @@ export const useUploadStore = defineStore('upload', () => {
         await browser.runtime.sendMessage(UPLOADER_ID, {
             type: 'upload',
             method: 'photoArrayBuffer',
-            endpoint: uploadLink.url,
+            apiKey: uploadLink.apiKey,
             data,
         });
     };
